@@ -9,9 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
+    "@mui/icons-material": "^6.2.0",
+    "@mui/material": "^6.1.10",
+    "@splidejs/react-splide": "^0.7.12",
+    "axios": "^1.7.9",
+    "formik": "^2.4.6",
+    "mega_ofertas": "file:",
+    "next": "15.0.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.0.4"
+    "yup": "^1.5.0"
   },
   "devDependencies": {
     "eslint": "^8",
