@@ -1,4 +1,4 @@
-import RegisterAdminForm from '../pages/user/RegisterAdminForm';
+import RegisterAdminForm from './user/register';
 
 export default function RegisterPage() {
     return (

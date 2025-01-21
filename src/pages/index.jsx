@@ -11,6 +11,7 @@ import VerticalSlider from '@/components/VerticalSlider';
 import splideGlobal from "../styles/splideGlobal.css";
 import TarjetaCategoria from '@/components/TarjetaCategoria';
 import categorias from "../data/categorias"
+import { Footer } from '@/components/Footer';
  // Importa tu contexto
 export default function Home() {
   const [productos, setProductos] = useState([]);
@@ -18,7 +19,7 @@ export default function Home() {
   const { category, fetchCategory, updateCategory } = useCategory();
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 8; 
+  const productsPerPage = 5; 
   
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -26,9 +27,9 @@ export default function Home() {
 
   const totalPages = Math.ceil(productos.length / productsPerPage);
 
-const handlePageChange = (page) => {
-  setCurrentPage(page);
-};
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
 
   useEffect(() => {
@@ -52,7 +53,7 @@ const handlePageChange = (page) => {
     updateCategory({ id: id });
   };
 
-console.log(productosFiltrados.products)
+
 
 
 
@@ -92,21 +93,14 @@ console.log(productosFiltrados.products)
       
 
 
-    <Grid2 sx={{display:"flex", height:"14rem", width:"80%", margin:"0 auto", justifyContent:"space-between", gap:"1rem"}}>
-        <Box sx={{backgroundColor:"#9FA5BB",display:"flex", height:"100%", width:"50%",borderRadius:"20px"}}>
 
-        </Box>
-        <Box sx={{backgroundColor:"#FFE1D5",display:"flex", height:"100%", width:"50%",borderRadius:"20px"}}>
-
-        </Box>
-    </Grid2>
     
       
       <Grid2 sx={{width:"100%", display:"flex",justifyContent:"space-between", alignItems:"center", padding:"1rem", borderRadius:"10px", flexDirection:"column", }}>
       
 
 
-        <Grid2 sx={{width:"90%", height:"50rem", display:"flex", justifyContent:"space-around", margin:"0 auto", alignItems:"center", padding:".5rem", borderRadius:"10px",flexWrap:"wrap"}}>
+        <Grid2 sx={{width:"90%", height:"25rem", display:"flex", justifyContent:"space-around", margin:"0 auto", alignItems:"end", padding:".5rem", borderRadius:"10px",flexWrap:"wrap"}}>
 
      {
       currentProducts.map((producto) =>(
@@ -119,21 +113,23 @@ console.log(productosFiltrados.products)
         </Grid2>
         <Grid2 style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
   {[...Array(totalPages)].map((_, index) => (
-    <Button
+    <IconButton
       key={index}
       onClick={() => handlePageChange(index + 1)}
       sx={{
         margin: "0 0.5rem",
-        padding: "0.5rem 1rem",
-        backgroundColor: currentPage === index + 1 ? "blue" : "gray",
+        padding: "1rem",
+        backgroundColor: currentPage === index + 1 ? " #e8621d" : " #e8621d",
+        width:currentPage === index + 1 ? "3rem" : "2rem",
+        height:currentPage === index + 1 ? "3rem" : "2rem",
         color: "white",
         border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
+        borderRadius: "50%",
+
       }}
     >
       {index + 1}
-    </Button>
+    </IconButton>
   ))}
 </Grid2>
       </Grid2>
@@ -154,6 +150,8 @@ console.log(productosFiltrados.products)
         </Paper>
    
     </Grid2>
+
+    <Footer/>
     </Grid2>
   );
 }

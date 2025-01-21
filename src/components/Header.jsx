@@ -18,6 +18,21 @@ export const Header = () => {
   const { user } = useMyUserContext();
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
   const [carritoView, setCarritoView] = useState(false)
+  const [username, setUsername] = useState("")
+
+  
+  
+
+
+  useEffect(() => {
+    const userStorage = localStorage.getItem("user");
+
+    if (userStorage) {
+      const user = JSON.parse(userStorage);
+      setUsername(`${user.first_name} ${user.last_name}`);
+    }
+  }, []);
+  
 
   const verCarrito = () => {
     setCarritoView(!carritoView); // Alterna entre true y false
@@ -106,7 +121,7 @@ export const Header = () => {
             }}
           >
             <Typography sx={{ fontSize: isMobile ? "12px" : "16px" }}>
-              {user?.email ? user.email : "Nicolas Iacono"}
+            {username || "Invitado"}
             </Typography>
             <Box
               sx={{
@@ -116,7 +131,9 @@ export const Header = () => {
               }}
             >
               <IconButton>
-                <img src="/iconos/usuario.svg" alt="User" style={{ width: "24px" }} />
+              <a href="/login">
+              <img src="/iconos/usuario.svg" alt="User" style={{ width: "24px" }} />
+              </a>
               </IconButton>
               <IconButton>
                 <img src="/iconos/corazon.svg" alt="Likes" style={{ width: "24px" }} />

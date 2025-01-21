@@ -1,60 +1,124 @@
-import React from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import axios from 'axios';
+import React from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { TextField, Grid2, Button } from "@mui/material";
+import Swal from "sweetalert2";
+import { useMyUserContext } from "@/context/userContext";
+import usuarioApi from "../../data/usuarioApi"; // Ajusta la importación según sea necesario.
+import axios from "axios";
+import { useRouter } from "next/router";
+
+const loginSchema = Yup.object({
+  email: Yup.string().email("Correo inválido").required("El correo es obligatorio"),
+  password: Yup.string().required("La contraseña es obligatoria"),
+});
 
 const LoginAdminForm = () => {
-    const initialValues = {
-        email: '',
-        password: '',
-    };
+  const router = useRouter();
+  const{user,setUser} = useMyUserContext();
 
-    const validationSchema = Yup.object({
-        email: Yup.string().email('Correo inválido').required('El correo es obligatorio'),
-        password: Yup.string().required('La contraseña es obligatoria'),
-    });
+   // Configuración de Formik
+   const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: Yup.object({
+      email: Yup.string()
+        .email("Correo electrónico inválido")
+        .required("El correo es obligatorio"),
+      password: Yup.string().required("La contraseña es obligatoria"),
+    }),
+    onSubmit: async (values, { setErrors })  => {
+      try {
+        // Llamada al endpoint
+        const response = await axios.post("http://localhost:5000/users/login", values);
 
-    const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-        try {
-            const response = await axios.post('/login', values); // Cambia la ruta según tu backend
-            const email = values.email
-            localStorage.setItem('email', email);
-            
-
-            alert('Inicio de sesión exitoso: ' + response.data.message);
-            resetForm();
-        } catch (error) {
-            console.error(error);
-            alert('Error al iniciar sesión: ' + error.response?.data?.message || 'Error desconocido');
-        } finally {
-            setSubmitting(false);
+        if (response.data.token) {
+          // Guardar token y datos del usuario en localStorage
+          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          setUser(response.data.user);
+          Swal.fire({
+            title: "¡Éxito!",
+            text: "Inicio de sesión exitoso",
+            icon: "success",
+          });
+          router.push("/");
+          // Redirigir o realizar acción adicional
+          console.log("Usuario logueado:", response.data.user);
+        } else {
+          throw new Error("No se recibió un token.");
         }
-    };
+      } catch (error) { if (error.response) {
+        // El servidor respondió con un código de error
+        const status = error.response.status;
 
-    return (
-        <div>
-            <h2>Inicio de Sesión de Administrador</h2>
-            <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-                {({ isSubmitting }) => (
-                    <Form>
-                        <div>
-                            <label htmlFor="email">Correo Electrónico</label>
-                            <Field type="email" id="email" name="email" />
-                            <ErrorMessage name="email" component="div" />
-                        </div>
-                        <div>
-                            <label htmlFor="password">Contraseña</label>
-                            <Field type="password" id="password" name="password" />
-                            <ErrorMessage name="password" component="div" />
-                        </div>
-                        <button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Iniciando...' : 'Iniciar Sesión'}
-                        </button>
-                    </Form>
-                )}
-            </Formik>
-        </div>
-    );
+        if (status === 404) {
+          setErrors({ email: "El correo no está registrado." });
+        } else if (status === 401) {
+          setErrors({ password: "La contraseña es incorrecta." });
+        } else {
+          setErrors({ general: "Error en el servidor. Intenta más tarde." });
+        }
+      } else {
+        // Error de conexión u otro tipo
+        setErrors({ general: "No se pudo conectar al servidor." });
+      }
+    }
+  },
+});
+
+  return (
+    <Grid2 container justifyContent="center" alignItems="center" style={{ height: "100%" }} sx={{display:"flex", flexDirection:"column"}}>
+          <Grid2 sx={{height:"18rem", margin:"0 auto", display:"flex", justifyContent:"center", alignItems:"center"}}>
+                       
+                        <img
+                            src="/Logo/LogoMega1.png"
+                            alt="Logo"
+                            style={{ width: "350px",}}
+        
+                            />
+                  </Grid2>
+
+
+
+      <form onSubmit={formik.handleSubmit} style={{ width: "300px" }}>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Email"
+          name="email"
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && formik.errors.email}
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Contraseña"
+          name="password"
+          type="password"
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={formik.touched.password && formik.errors.password}
+        />
+        <Button
+          fullWidth
+          type="submit"
+          variant="contained"
+          color="primary"
+          style={{ marginTop: "16px" }}
+          sx={{backgroundColor:"#513C9C"}}
+          disabled={formik.isSubmitting}
+        >
+          {formik.isSubmitting ? "Cargando..." : "Iniciar Sesión"}
+        </Button>
+      </form>
+    </Grid2>
+  );
 };
 
 export default LoginAdminForm;

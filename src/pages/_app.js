@@ -14,6 +14,12 @@ export default function MyApp({ Component, pageProps }) {
       },
     },
   });
+  const getLayout =
+    Component.getLayout || ((page) => (
+      <Layout>
+        {page}
+      </Layout>
+    ));
 
   return (
   
@@ -23,9 +29,7 @@ export default function MyApp({ Component, pageProps }) {
 
       <UserContextProvider>
 
-            <Layout>
-                <Component {...pageProps} />
-            </Layout>
+      {getLayout(<Component {...pageProps} />)}
         
 
       </UserContextProvider>

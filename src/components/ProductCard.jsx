@@ -39,13 +39,16 @@ const ProductCard = ({producto}) => {
 
   {/* {productos.map((producto) => ( */}
 
-    <Paper elevation={8} key={producto.id} sx={{width:"20rem", height:"24rem", display:"flex", flexDirection:"column", backgroundColor:"white", borderRadius:"5px",padding:".5rem"}}>
+    <Card elevation={8} key={producto.id} sx={{width:"15rem", height:"22rem", display:"flex", flexDirection:"column", backgroundColor:"white", borderRadius:"5px",padding:"1.5rem 2rem"}}>
     
-        <Box  sx={{width:"100%", height:"9rem",  backgroundImage: producto.imagenes && producto.imagenes.length > 0
-              ? `url(${producto.imagenes[0]})`
-              : "url('/placeholder.jpg')", backgroundPosition:"center center", backgroundRepeat:"no-repeat", backgroundSize:"cover", borderRadius:"5px", }}>
-        </Box>
-        <Box sx={{ width:"90%", height:"50%",display:"flex", flexDirection:"column", flexWrap:"nowrap",justifyContent:"space-between",alignItems:"start",
+        <CardMedia  sx={{width:"100%", height:"9rem", backgroundPosition:"center center", backgroundRepeat:"no-repeat", backgroundSize:"contain", borderRadius:"5px", }}
+              image={producto.imagenes && producto.imagenes.length > 0 
+                ? producto.imagenes[0] 
+                : "/placeholder.jpg"}
+              alt={producto.name || "Imagen del producto"}
+          >
+        </CardMedia>
+        <CardContent sx={{ width:"90%", height:"50%",display:"flex", flexDirection:"column", flexWrap:"nowrap",justifyContent:"space-between",alignItems:"start",
         padding:".5rem"
         }}>
           <Typography variant='h7' sx={{color:"black", color:"gray", }}>
@@ -58,12 +61,15 @@ const ProductCard = ({producto}) => {
               $ {producto.price}
           </Typography>
 
-        </Box>
-        <Button variant='outlined'
-       onClick={() => handleViewDetails(producto.id)}>
-          Ver producto
-        </Button>
-    </Paper>
+        </CardContent>
+        <CardActions>
+            <Button variant='contained'
+          onClick={() => handleViewDetails(producto.id)}>
+              Ver producto
+            </Button>
+        </CardActions>
+        
+    </Card>
   {/* ))} */}
 
 

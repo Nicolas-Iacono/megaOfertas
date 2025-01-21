@@ -1,35 +1,46 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import Swal from 'sweetalert2';
 
-const userContextGlobal = createContext();
+const UserContext = createContext();
 
-export const UserContextProvider = ({children}) => {
+export const UserContextProvider = ({ children }) => {
   const [user, setUser] = useState({
-    email : '',
-    authorities: [],
-  })
+    email: null,
+    token: null,
+    first_name: null,
+    last_name: null,
+    authorities:[]
+  });
+console.log(user);
+  const [isUser, setIsUser] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLogged, setIsLogged] = useState(false);
 
-  useEffect(() => {
-    const email = localStorage.getItem('email');
-    if (email) {
-      setUser({
-        email,
-        authorities: [],
-      });
-    }
-  }, []); 
+
+  const login =  (token, email) =>{
+    const decoded = jwtDecode(token);
+    
+  }
+
+
   
+  const logout = () => {
+    localStorage.clear();
+    setUser({ email: "", token: "" });
+  };
 
   return (
-    <userContextGlobal.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, logout }}>
       {children}
-    </userContextGlobal.Provider>
+    </UserContext.Provider>
   );
-}
+};
 
 export const useMyUserContext = () => {
-  const context = useContext(userContextGlobal);
-  if(!context) {
-    throw new Error("Inicie sesion para realizar este paso");
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("UserContext must be used within a UserContextProvider");
   }
   return context;
-} 
+};

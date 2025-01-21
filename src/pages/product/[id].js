@@ -1,18 +1,34 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { Container, Typography, Box, CardMedia, Button } from "@mui/material";
+import { Container, Typography, Box, CardMedia, Button, IconButton } from "@mui/material";
 import API from "../../utils/api"; // Verifica que esta ruta sea correcta.
 import { useMyCarritoContext } from "@/context/carritoContext";
+import { Form } from "formik";
 
 
 const ProductDetails = () => {
+ 
   const router = useRouter();
   const { id } = router.query; // Obtenemos el ID desde la URL.
   const [product, setProduct] = useState(null);
   const [imgSelected, setImgSelected] = useState(0)
+  const [likeBtn, setLikeBtn] = useState(false);
+  const [productoAgregado, setProductoAgregado] = useState(false)
  const {carrito, setCarrito, agregarAlCarrito,eliminarDelCarrito, vaciarCarrito,totalCarrito} = useMyCarritoContext();
   console.log(carrito);
   
+  const comprobacionAgregado = (id) => {
+
+    if(!carrito.find((item) => item.id === item.id)){
+      agregarAlCarrito(product)
+      setProductoAgregado(true)
+    }else{
+      setProductoAgregado(false)
+
+    }    
+  }
+
+
   const handleImageClick = (index) => {
     setImgSelected(index); // Cambiar la imagen de portada al índice clickeado
   };
@@ -24,7 +40,7 @@ const ProductDetails = () => {
         .catch((error) => console.error("Error al cargar el producto:", error));
     }
   }, [id]);
-console.log(product);
+
 
   if (!product) {
     return (
@@ -37,7 +53,14 @@ console.log(product);
         </Button>
       </Container>
     );
+  } 
+  
+  const viewLike = () => {
+    setLikeBtn(!likeBtn);
   }
+  const handleRedirect = () => {
+    window.location.href = 'https://link.mercadopago.com.ar/mgofertas';
+  };
 
   return (
     <Container sx={{ marginTop: 7, height:{md:"40rem"} }}>
@@ -70,13 +93,30 @@ console.log(product);
        </Box>
        
         <Box sx={{display:"flex",flexDirection:"column", backgroundColor:"white", height:"85%", padding:"1rem", justifyContent:"space-between", width:"50%"}}>
-            <Box sx={{display:"flex",flexDirection:"column", width:"100%"}}>
-                <Typography variant="subtitle1" color="gray" sx={{fontWeight:700}}>
-                    {product.marca}
+            <Box sx={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <Box sx={{display:"flex",flexDirection:"column", width:"100%"}}>
+                    <Typography variant="subtitle1" color="gray" sx={{fontWeight:700}}>
+                        {product.marca}
+                      </Typography>
+                      <Typography variant="h3" gutterBottom sx={{width:"100%"}}>
+                    {product.nombre}
                   </Typography>
-                  <Typography variant="h3" gutterBottom sx={{width:"100%"}}>
-                {product.nombre}
-              </Typography>
+                </Box>
+
+                {likeBtn ? 
+                    
+                    ( <IconButton sx={{width:"3rem", height:"3rem", border:"3px solid orange", borderRadius:"50%", display:"flex", justifyContent:"center", alignItems:"center", cursor:"pointer", backgroundColor:"orange",color:"orange"}} onClick={viewLike}>
+                      <img src="/iconos/corazon.svg" width="20px"/>
+                    </IconButton>) 
+                    
+                    : 
+                    
+                    ( <IconButton sx={{width:"3rem", height:"3rem", border:"3px solid orange", borderRadius:"50%", display:"flex", justifyContent:"center", alignItems:"center", cursor:"pointer", color:"orange", }} onClick={viewLike}>
+                      <img src="/iconos/corazonNaranja.png" width="20px"/>
+                    </IconButton>)
+                    
+                }
+               
             </Box>
             
 
@@ -148,9 +188,9 @@ console.log(product);
         
           <Button 
           key={product.id}
-          onClick={() => agregarAlCarrito(product)} 
+          onClick={handleRedirect} 
           variant="contained"  sx={{backgroundColor:"orange", height:"2rem", borderRadius:3}}>
-            Agregar al carrito
+             Comprar producto
           </Button>
         </Box>
           

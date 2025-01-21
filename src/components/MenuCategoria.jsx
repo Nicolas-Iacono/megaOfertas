@@ -5,7 +5,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { Typography } from "@mui/material";
 import API from "@/utils/api";
 import { useEffect, useState } from "react";
-
+import { useRouter } from "next/router";
 const MenuCategoria = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -28,9 +28,11 @@ const MenuCategoria = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  const handleCategoryClick = (categoriaId) => {
+  
+  const router = useRouter();
+  const handleCategoryClick = (id) => {
     setAnchorEl(null); 
+    router.push(`/category/${id}`);
 
   };
 

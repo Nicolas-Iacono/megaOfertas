@@ -16,10 +16,12 @@
     "@splidejs/react-splide": "^0.7.12",
     "axios": "^1.7.9",
     "formik": "^2.4.6",
+    "jwt-decode": "^4.0.0",
     "mega_ofertas": "file:",
     "next": "15.0.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sweetalert2": "^11.15.10",
     "yup": "^1.5.0"
   },
   "devDependencies": {

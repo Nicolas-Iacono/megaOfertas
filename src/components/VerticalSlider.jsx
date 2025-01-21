@@ -4,10 +4,23 @@ import '@splidejs/splide/dist/css/splide.min.css';
 import { Box, Button, Paper, Typography } from '@mui/material';
 import axios from 'axios';
 import splideGlobal from "../styles/splideGlobal.css"
+import { useRouter } from "next/router";
 export const VerticalSlider = () => {
   const [products, setProducts] = useState([]);
+  const router = useRouter();
 
-  // Fetch data from the API
+  const handleViewDetails = (id) => {
+    router.push(`/product/${id}`);
+  };
+
+
+  const truncateText = (text, maxLength) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + '...';
+    }
+    return text;
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -39,7 +52,7 @@ export const VerticalSlider = () => {
     >
 
 
-      <Box sx={{width:"50%", height:"15rem"}}>
+      <Box sx={{width:"40%", height:"15rem"}}>
           <Typography variant='h2' style={{fontWeight:"100",fontStyle:"oblique" }}>
             NUEVAS  <span style={{fontWeight:"800",fontStyle:"oblique", color:"#5105E8"}}>OFERTAS TODOS</span> LOS DIAS
           </Typography>
@@ -47,7 +60,7 @@ export const VerticalSlider = () => {
       </Box>
 
       <Splide
-      style={{position:"relative"}}
+      style={{position:"relative", backgroundColor:"red"}}
         options={{
           direction: 'ttb', // Vertical slider
           height: '25rem',
@@ -72,7 +85,9 @@ export const VerticalSlider = () => {
                 border: '1px solid #ccc',
                 borderRadius: '8px',
                 backgroundColor: '#f9f9f9',
-                width:"95%"
+                width:"95%",
+                height:"24rem"
+                
                 
               }}
             >
@@ -82,18 +97,20 @@ export const VerticalSlider = () => {
                   display: 'flex',
                   gap: '4rem',
                   justifyContent: 'space-between',
+                  alignItems:"center",
+                  height: '100%'
                 }}
               >
                 {/* Column 1 */}
-                <Box sx={{ display:"flex" , justifyContent:"space-between",flexDirection:"column",padding:"2rem"}}>
+                <Box sx={{ display:"flex" , justifyContent:"space-between",flexDirection:"column",padding:"2rem",width:"47%", height:"90%"}}>
                   <Typography variant="body1" fontWeight="bold" sx={{color:"gray"}}>
                     {product.brand}
                   </Typography>
-                  <Typography variant="h3" color="textSecondary">
+                  <Typography variant="h4" color="textSecondary">
                     {product.name}
                   </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {product.descripcion}
+                  <Typography variant="body3" color="textSecondary">
+                    {truncateText(product.descripcion, 60)}
                   </Typography>
                   <Typography variant="h5" color="primary" mt="0.5rem">
                     ${product.price}
@@ -106,7 +123,8 @@ export const VerticalSlider = () => {
                   justifyContent: 'flex-start',
                 }}
               >
-                <Button variant="contained" color="primary">
+                <Button variant="contained" color="primary"
+                onClick={() => handleViewDetails(product.id)}>
                   Ver más
                 </Button>
               </Box>
@@ -118,11 +136,11 @@ export const VerticalSlider = () => {
                     flex: 2,
                     display: 'flex',
                     alignItems: 'center',
-                    width:"60%",
+                    width:{md:"25rem", xs:"100%"},
                     justifyContent: 'center',
                     backgroundColor: 'black',
-                    padding:1,
-                    borderRadius:3
+                    borderRadius:3,
+                    height:{md:"19rem", xs:"100%"}
 
                   }}
                 >
@@ -134,10 +152,12 @@ export const VerticalSlider = () => {
                     }
                     alt={product.name}
                     style={{
-                      maxWidth: '80%',
+                      width:"100%",
+                      maxWidth: '100%',
                       maxHeight: '100%',
                       objectFit: 'contain',
-                      borderRadius: '10px'
+                      borderRadius: '10px',
+
                     }}
                   />
                 </Box>
