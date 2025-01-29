@@ -13,6 +13,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import SelectAPI from "./selectCategoria"; // Asegúrate de importar correctamente
 import axios from "axios";
+import SwitchDisponibility from "./buttons/SwitchDisponibility";
 
 const validationSchema = Yup.object({
   nombre: Yup.string().required("El nombre es obligatorio"),
@@ -31,9 +32,12 @@ const validationSchema = Yup.object({
     .of(Yup.string().url("Debe ser una URL válida"))
     .min(1, "Debe agregar al menos una imagen"),
   categoriaId: Yup.number().required("La categoría es obligatoria"),
+  disponible: Yup.boolean().required("La disponibilidad es obligatoria"),
 });
 
 const ProductoForm = () => {
+const [view, setView] = useState(false);
+
   const formik = useFormik({
     initialValues: {
       nombre: "",
@@ -42,8 +46,10 @@ const ProductoForm = () => {
       precioLista: 0,
       precioVenta: 0,
       descripcion: "",
-      imagenes: [""],
+      categoriaName:'',
       categoriaId: "", // Inicializa en vacío
+      imagenes: [""],
+      disponible: true,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -61,6 +67,7 @@ const ProductoForm = () => {
     },
   });
 
+  console.log(formik.values.disponible)
   const handleCategorySelect = (categoryId) => {
     formik.setFieldValue("categoriaId", categoryId); // Actualiza el valor en formik
   };
@@ -80,12 +87,29 @@ const ProductoForm = () => {
         display: "flex",
         flexDirection: "column",
         gap: 2,
-        width: "80%",
+        width: "100%",
         padding: 2,
+        height: "90%",
+        justifyContent: "flex-start", // El formulario crece hacia abajo
+        position: "relative",
+        marginTop: formik.values.imagenes.length > 0 ? "2rem" : "0", // Solo agrega espacio extra cuando hay imágenes
+      transition: "margin-top 0.3s ease", // Transición suave
+        
       }}
     >
-      <Typography variant="h4">Crear Producto</Typography>
+      <Typography variant="h4" sx={{color:"black"}}>Crear Producto</Typography>
+      <Box     sx={{
+      marginTop: formik.values.imagenes.length > 0 ? "1rem" : "0", // Solo agrega espacio extra cuando hay imágenes
+      transition: "margin-top 0.3s ease", // Transición suave
+      width: "100%",
+      border:{xs:"none", md:"1px solid black"},
+      borderRadius:"10px",
+      padding:{xs:0,md:2},
+    }}
+>
       <form onSubmit={formik.handleSubmit}>
+       <Box sx={{display:"flex", flexDirection:{xs:"column",md:"row"},gap:2}}>
+
         <TextField
           label="Nombre"
           name="nombre"
@@ -129,23 +153,49 @@ const ProductoForm = () => {
           error={formik.touched.precioVenta && Boolean(formik.errors.precioVenta)}
           helperText={formik.touched.precioVenta && formik.errors.precioVenta}
         />
+        </Box>
+        <Box sx={{width:{xs:"100%", md:"100%"},marginTop:"1rem", gap:2, display:"flex", flexDirection:{xs:"column", md:"row"}, justifyContent:{md:"space-between"}, height:{md:"auto"}}}>
+
+        <Box sx={{display:"flex", flexDirection:"column",gap:2, width:{xs:"100%",md:"60%"}}}>
+        <Typography variant="h6" sx={{color:"black"}}>Agregar descripcion</Typography>
         <TextareaAutosize
           minRows={4}
           placeholder="Descripción del Producto"
           name="descripcion"
           value={formik.values.descripcion}
           onChange={formik.handleChange}
-          style={{ width: "100%", padding: "8px" }}
+          style={{width:"100%", borderRadius:"11px", padding:"10px", height:"auto"}}
         />
-        <Typography variant="h6">Seleccionar Categoría</Typography>
+        </Box>
+          <Box sx={{height:{md:"15rem",xs:"5rem"}, display:"flex", justifyContent:"start", alignItems:{xs:"center",md:"center"},flexDirection:{xs:"column",}}}>
+            <Box sx={{display:"flex", justifyContent:{xs:"center",md:"start"}, alignItems:{xs:"center",md:"center"}, flexDirection:{xs:"column"}, padding:1, gap:1, backgroundColor:"rgb(255, 106, 19)", borderRadius:3}}>
+            <Typography variant="h6" sx={{color:"white"}}>
+              Habilitar
+            </Typography>
+            
+            <SwitchDisponibility 
+              checked={formik.values.disponible} 
+              onChange={() => formik.setFieldValue("disponible", !formik.values.disponible)} 
+              />
+            </Box>
+           
+
+          </Box>
+        </Box>
+        <Box>
+
+        <Typography variant="h6" sx={{color:"black"}}>Seleccionar Categoría</Typography>
         <SelectAPI onSelect={handleCategorySelect} />
         {formik.touched.categoriaId && formik.errors.categoriaId && (
           <Typography color="error">{formik.errors.categoriaId}</Typography>
         )}
-        <Typography variant="h6">Imágenes</Typography>
+        </Box>
+        <Box>
+        <Typography variant="h6" sx={{color:"black"}}>Agregar imágenes de producto</Typography>
         {formik.values.imagenes.map((imagen, index) => (
           <Box key={index}>
             <TextField
+              sx={{marginTop:"1rem"}}
               label={`Imagen URL ${index + 1}`}
               value={imagen}
               onChange={(e) =>
@@ -161,10 +211,16 @@ const ProductoForm = () => {
           </Box>
         ))}
         <Button onClick={handleAddImageField}>Agregar Imagen</Button>
+        </Box>
+        <Box sx={{ width:"100%",display:"flex",justifyContent:{xs:"center", md:"end"},alignItems:"center"}}>
         <Button type="submit" variant="contained" color="primary">
           Crear Producto
         </Button>
+        </Box>
       </form>
+      </Box>
+      
+      
     </Box>
   );
 };

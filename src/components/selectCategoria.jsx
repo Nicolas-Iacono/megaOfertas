@@ -29,11 +29,13 @@ const SelectAPI = ({ onSelect }) => {
 
     if (onSelect) {
       onSelect(selectedValue, selectedIndex); // Pasar el valor y el índice al componente padre.
+      console.log(selectedValue);
     }
   };
 
   return (
-    <Box sx={{ minWidth: 120 }}>
+    <Box sx={{ minWidth: 120, width: {md:"14rem", xs:"100%"}
+    }}>
       <FormControl fullWidth>
         <InputLabel id="api-select-label">Selecciona una opción</InputLabel>
         <Select

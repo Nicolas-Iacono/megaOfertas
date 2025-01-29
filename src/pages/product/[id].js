@@ -4,8 +4,8 @@ import { Container, Typography, Box, CardMedia, Button, IconButton } from "@mui/
 import API from "../../utils/api"; // Verifica que esta ruta sea correcta.
 import { useMyCarritoContext } from "@/context/carritoContext";
 import { Form } from "formik";
-
-
+import getLocalStorage from "../../helper/getLocalStorage";
+import  LikeButton from "../../components/buttons/ProductLikeButton";
 const ProductDetails = () => {
  
   const router = useRouter();
@@ -15,8 +15,20 @@ const ProductDetails = () => {
   const [likeBtn, setLikeBtn] = useState(false);
   const [productoAgregado, setProductoAgregado] = useState(false)
  const {carrito, setCarrito, agregarAlCarrito,eliminarDelCarrito, vaciarCarrito,totalCarrito} = useMyCarritoContext();
-  console.log(carrito);
+ const [user, setUser] = useState(null);
   
+
+ useEffect(() => {
+  const storedUser = getLocalStorage("user");
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
+}, []);
+
+
+const userId = user ? user.id : null;
+
+
   const comprobacionAgregado = (id) => {
 
     if(!carrito.find((item) => item.id === item.id)){
@@ -42,6 +54,7 @@ const ProductDetails = () => {
   }, [id]);
 
 
+
   if (!product) {
     return (
       <Container sx={{ marginTop: 4, textAlign: "center" }}>
@@ -55,9 +68,7 @@ const ProductDetails = () => {
     );
   } 
   
-  const viewLike = () => {
-    setLikeBtn(!likeBtn);
-  }
+
   const handleRedirect = () => {
     window.location.href = 'https://link.mercadopago.com.ar/mgofertas';
   };
@@ -103,20 +114,8 @@ const ProductDetails = () => {
                   </Typography>
                 </Box>
 
-                {likeBtn ? 
-                    
-                    ( <IconButton sx={{width:"3rem", height:"3rem", border:"3px solid orange", borderRadius:"50%", display:"flex", justifyContent:"center", alignItems:"center", cursor:"pointer", backgroundColor:"orange",color:"orange"}} onClick={viewLike}>
-                      <img src="/iconos/corazon.svg" width="20px"/>
-                    </IconButton>) 
-                    
-                    : 
-                    
-                    ( <IconButton sx={{width:"3rem", height:"3rem", border:"3px solid orange", borderRadius:"50%", display:"flex", justifyContent:"center", alignItems:"center", cursor:"pointer", color:"orange", }} onClick={viewLike}>
-                      <img src="/iconos/corazonNaranja.png" width="20px"/>
-                    </IconButton>)
-                    
-                }
-               
+  
+              <LikeButton productId={product.id} userId={userId} />
             </Box>
             
 

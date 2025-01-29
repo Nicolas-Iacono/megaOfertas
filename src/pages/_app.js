@@ -16,7 +16,7 @@ export default function MyApp({ Component, pageProps }) {
   });
   const getLayout =
     Component.getLayout || ((page) => (
-      <Layout>
+      <Layout style={{backgroundColor:"blue"}}>
         {page}
       </Layout>
     ));

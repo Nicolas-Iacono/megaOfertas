@@ -9,14 +9,14 @@ const Layout = ({ children }) => {
 
   const {user} = useMyUserContext()
   return (
-    <g>
+      <>
       <Header/>
       {/* Main Content */}
-      <Fondo >
+      {/* <Fondo > */}
         {children}
-      </Fondo>
+      {/* </Fondo> */}
       {/* Footer */}
-    </g>
+    </>
   );
 };
 

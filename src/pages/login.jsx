@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useMyUserContext } from "@/context/userContext";
 
 export default function LoginPage() {
-    const {user, setUser} = useMyUserContext();
+    const {user, setUser, isUser,isAdmin} = useMyUserContext();
 
     const[registerView, setRegisterView] = useState(false)
 

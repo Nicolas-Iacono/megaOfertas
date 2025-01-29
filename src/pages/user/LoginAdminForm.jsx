@@ -15,7 +15,7 @@ const loginSchema = Yup.object({
 
 const LoginAdminForm = () => {
   const router = useRouter();
-  const{user,setUser} = useMyUserContext();
+  const {user, setUser, isUser,isAdmin} = useMyUserContext();
 
    // Configuración de Formik
    const formik = useFormik({
@@ -33,39 +33,50 @@ const LoginAdminForm = () => {
       try {
         // Llamada al endpoint
         const response = await axios.post("http://localhost:5000/users/login", values);
-
+    
         if (response.data.token) {
           // Guardar token y datos del usuario en localStorage
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("user", JSON.stringify(response.data.user));
           setUser(response.data.user);
-          Swal.fire({
-            title: "¡Éxito!",
-            text: "Inicio de sesión exitoso",
-            icon: "success",
-          });
+    
+          // Verificar el rol directamente desde response.data.user
+          if (response.data.user.authorities.includes("ROLE_ADMIN")) {
+            Swal.fire({
+              title: `Bienvenido ${response.data.user.first_name}`,
+              text: "Haz iniciado como administrador",
+              icon: "success",
+            });
+          } else {
+            Swal.fire({
+              title: `Bienvenido ${response.data.user.first_name}`,
+              text: "Haz iniciado sesión",
+              icon: "success",
+            });
+          }
+    
           router.push("/");
-          // Redirigir o realizar acción adicional
           console.log("Usuario logueado:", response.data.user);
         } else {
           throw new Error("No se recibió un token.");
         }
-      } catch (error) { if (error.response) {
-        // El servidor respondió con un código de error
-        const status = error.response.status;
-
-        if (status === 404) {
-          setErrors({ email: "El correo no está registrado." });
-        } else if (status === 401) {
-          setErrors({ password: "La contraseña es incorrecta." });
+      } catch (error) {
+        if (error.response) {
+          // El servidor respondió con un código de error
+          const status = error.response.status;
+    
+          if (status === 404) {
+            setErrors({ email: "El correo no está registrado." });
+          } else if (status === 401) {
+            setErrors({ password: "La contraseña es incorrecta." });
+          } else {
+            setErrors({ general: "Error en el servidor. Intenta más tarde." });
+          }
         } else {
-          setErrors({ general: "Error en el servidor. Intenta más tarde." });
+          // Error de conexión u otro tipo
+          setErrors({ general: "No se pudo conectar al servidor." });
         }
-      } else {
-        // Error de conexión u otro tipo
-        setErrors({ general: "No se pudo conectar al servidor." });
       }
-    }
   },
 });
 

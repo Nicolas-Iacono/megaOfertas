@@ -19,7 +19,28 @@ export default function Home() {
   const { category, fetchCategory, updateCategory } = useCategory();
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 5; 
+
+  const [productsPerPage, setProductsPerPage] = useState(5);
+   useEffect(() => {
+    const updateProductsPerPage = () => {
+      if (window.innerWidth < 1900) { // Cambia "768" por la cantidad de píxeles deseada
+        setProductsPerPage(4);
+      } else {
+        setProductsPerPage(5);
+      }
+    };
+
+    // Configura el valor inicial
+    updateProductsPerPage();
+
+    // Escucha los cambios de tamaño de la ventana
+    window.addEventListener("resize", updateProductsPerPage);
+
+    // Limpia el evento cuando el componente se desmonta
+    return () => {
+      window.removeEventListener("resize", updateProductsPerPage);
+    };
+  }, []);
   
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;

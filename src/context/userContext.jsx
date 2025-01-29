@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import Swal from 'sweetalert2';
 
@@ -17,6 +17,35 @@ console.log(user);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLogged, setIsLogged] = useState(false);
 
+  useEffect(() => {
+    try {
+      const userStorage = localStorage.getItem("user");
+      if (userStorage) {
+        const user = JSON.parse(userStorage);
+        setUser(user);
+        setIsLogged(true);
+  
+        // Verificar si el usuario tiene el rol ADMIN
+        if (!user.authorities.includes("ROLE_ADMIN")) {
+          setIsAdmin(false);
+          setIsUser(true); // Si es admin, no debe ser tratado como usuario común
+        } else {
+          setIsAdmin(true);
+          setIsUser(false); // Si no es admin, es un usuario común
+        }
+  
+
+      }
+    } catch (error) {
+      console.error("Error al obtener el usuario del localStorage:", error);
+    }
+  }, []);
+
+        useEffect(() => {
+          console.log("Estado actualizado -> Es admin:", isAdmin);
+          console.log("Estado actualizado -> Es usuario común:", isUser);
+        }, [isAdmin, isUser]);
+
 
   const login =  (token, email) =>{
     const decoded = jwtDecode(token);
@@ -31,7 +60,7 @@ console.log(user);
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, logout }}>
+    <UserContext.Provider value={{ user, setUser, logout, isUser,isAdmin }}>
       {children}
     </UserContext.Provider>
   );
