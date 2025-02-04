@@ -9,11 +9,10 @@ import {
   TextareaAutosize,
   IconButton,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import SelectAPI from "./selectCategoria"; // Asegúrate de importar correctamente
-import axios from "axios";
+import SelectAPI from "./selectCategoria"; 
 import SwitchDisponibility from "./buttons/SwitchDisponibility";
+import API from "@/utils/api";
 
 const validationSchema = Yup.object({
   nombre: Yup.string().required("El nombre es obligatorio"),
@@ -54,8 +53,8 @@ const [view, setView] = useState(false);
     validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(
-          "http://localhost:5000/products/crear-producto",
+        const response = await API.post(
+          "products/crear-producto",
           values
         );
         console.log("Producto creado exitosamente:", response.data);
@@ -67,7 +66,7 @@ const [view, setView] = useState(false);
     },
   });
 
-  console.log(formik.values.disponible)
+
   const handleCategorySelect = (categoryId) => {
     formik.setFieldValue("categoriaId", categoryId); // Actualiza el valor en formik
   };
@@ -94,6 +93,7 @@ const [view, setView] = useState(false);
         position: "relative",
         marginTop: formik.values.imagenes.length > 0 ? "2rem" : "0", // Solo agrega espacio extra cuando hay imágenes
       transition: "margin-top 0.3s ease", // Transición suave
+        marginBottom:{xs:"4rem", md:"0px"}
         
       }}
     >
@@ -167,8 +167,8 @@ const [view, setView] = useState(false);
           style={{width:"100%", borderRadius:"11px", padding:"10px", height:"auto"}}
         />
         </Box>
-          <Box sx={{height:{md:"15rem",xs:"5rem"}, display:"flex", justifyContent:"start", alignItems:{xs:"center",md:"center"},flexDirection:{xs:"column",}}}>
-            <Box sx={{display:"flex", justifyContent:{xs:"center",md:"start"}, alignItems:{xs:"center",md:"center"}, flexDirection:{xs:"column"}, padding:1, gap:1, backgroundColor:"rgb(255, 106, 19)", borderRadius:3}}>
+          <Box sx={{height:{md:"15rem",xs:"100%"}, display:"flex", justifyContent:"start", alignItems:{xs:"center",md:"center"},flexDirection:{xs:"column",}}}>
+            <Box sx={{display:"flex", justifyContent:{xs:"center",md:"start"}, alignItems:{xs:"center",md:"center"}, flexDirection:{xs:"column"}, padding:1, gap:1, backgroundColor:"rgb(255, 106, 19)", borderRadius:3, width:{xs:"100%",md:"15rem"}}}>
             <Typography variant="h6" sx={{color:"white"}}>
               Habilitar
             </Typography>

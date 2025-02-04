@@ -38,41 +38,40 @@ const CategoryDetails = () => {
     <Grid2
           container
           sx={{
-            backgroundColor: "#6D33BE",
+            backgroundColor: "rgb(218, 218, 218)",
             position: "absolute",
-           
+            height:"90vh",
             top: 0,
             width: "100%",
             left: 0,
             padding: 0,
             boxSizing: "border-box",
-    
+
           }}
         >
+    <Grid2 sx={{backgroundColor:"rgba(92, 15, 200, 0.82)", display:"flex",flexDirection:"column", alignItems:"start",justifyContent:"start", padding:2, width:"100%", height:{md:"6rem", xs:"4.5rem"}, borderRadius:"0 0 25px 0px"}}>
 
-    <Grid2 sx={{ marginTop: 5, display:"flex", justifyContent:"flex-end", width:"100%", padding:"1rem", alignItems:"start"}}>
-      <Grid2 sx={{ width:"70rem", display:"flex",flexDirection:"column", alignItems:"start",justifyContent:"start"}}>
-      <Box  sx={{height:"2.5rem", width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+    <Box  sx={{height:"1.5rem", width:"100%", display:"flex",justifyContent:"start", alignItems:"center", flexDirection:"row", height:"100%"}}>
       <Typography variant="h6" sx={{ marginBottom: 2, color:"white" }}>
         Todos los produtos - {nameCategory}
       </Typography>
       </Box>
       <Box sx={{height:"2.5rem", width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-      <Typography variant="h6" sx={{ marginBottom:"2rem", color:"white"}}>
+      <Typography variant="body1" sx={{ marginBottom:"2rem", color:"white"}}>
         {products.length} resulados
       </Typography>
         </Box>
-        <Box sx={{height:"2.5rem", width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-        <Typography variant="h2" sx={{ marginBottom:"2rem", color:"white"}}>
-       {nameCategory}
-      </Typography>
-        </Box>
-      
-      
-  
+
       </Grid2>
+
+
+  
+      <Grid2 sx={{ width:"100%", display:"flex",flexDirection:"column", alignItems:"center",justifyContent:"center"}}>
       
-      <Grid2 container spacing={1} sx={{width:"130%", marginTop:"5rem"}}>
+      
+      
+      
+      <Grid2 container spacing={2} sx={{ marginTop:"2rem", display:"flex", flexDirection:"row", justifyContent:"center",alignItems:"center"}}>
         {
  currentProducts.map((product) =>(
 
@@ -81,8 +80,9 @@ const CategoryDetails = () => {
         id={product.id}
         name={product.name}
         price={product.price}
-        priceList={product.priceLista}
-        image={product.imagenes?.[0] || "/placeholder.jpg"}
+        image={product.imagenes && product.imagenes.length > 0 
+          ? product.imagenes[0] 
+          : "/placeholder.jpg"}
         brand={product.brand} // If available
       />
     </Grid2>
@@ -91,7 +91,7 @@ const CategoryDetails = () => {
      
       </Grid2>
     </Grid2>
-    <Grid2 style={{ display: "flex", justifyContent: "center", marginTop: "1rem", alignItems:"center",gap:".5rem", width:"100%",marginBottom:"3rem" }}>
+    <Grid2 style={{ display: "flex", justifyContent: "center", marginTop: "1rem", alignItems:"center",gap:".5rem", width:"100%",marginBottom:"3rem", position:"relative", bottom:"-1rem" }}>
   {[...Array(totalPages)].map((_, index) => (
     <IconButton
       key={index}

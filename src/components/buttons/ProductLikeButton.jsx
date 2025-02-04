@@ -43,8 +43,8 @@ const ProductLikeButton = ({ productId, userId }) => {
   return (
     <IconButton
       sx={{
-        width: "3rem",
-        height: "3rem",
+        width: {xs:"2.5rem",md:"3rem"},
+        height:{xs:"2.5rem",md:"3rem"},
         border: "3px solid orange",
         borderRadius: "50%",
         display: "flex",

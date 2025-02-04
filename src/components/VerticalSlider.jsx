@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/splide/dist/css/splide.min.css';
-import { Box, Button, Paper, Typography } from '@mui/material';
-import axios from 'axios';
-import splideGlobal from "../styles/splideGlobal.css"
+import { Box, Button, Paper, Typography} from '@mui/material';
 import { useRouter } from "next/router";
+import API from '@/utils/api';
 export const VerticalSlider = () => {
   const [products, setProducts] = useState([]);
   const router = useRouter();
+
 
   const handleViewDetails = (id) => {
     router.push(`/product/${id}`);
@@ -24,7 +24,7 @@ export const VerticalSlider = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/products/latestfive');
+        const response = await API.get('/products/latestfive');
         setProducts(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -52,15 +52,15 @@ export const VerticalSlider = () => {
     >
 
 
-      <Box sx={{width:"40%", height:"15rem"}}>
-          <Typography variant='h2' style={{fontWeight:"100",fontStyle:"oblique" }}>
+      <Box sx={{width:"40%", height:"15rem" ,display:{xs:"none",md:"flex"}}}>
+          <Typography variant='h2' style={{fontWeight:"100",fontStyle:"oblique"}}>
             NUEVAS  <span style={{fontWeight:"800",fontStyle:"oblique", color:"#5105E8"}}>OFERTAS TODOS</span> LOS DIAS
           </Typography>
         
       </Box>
 
       <Splide
-      style={{position:"relative", backgroundColor:"red"}}
+      style={{position:"relative"}}
         options={{
           direction: 'ttb', // Vertical slider
           height: '25rem',

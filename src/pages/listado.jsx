@@ -3,6 +3,8 @@ import React, { useState, useEffect} from 'react'
 import API from '@/utils/api'
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import anime from 'animejs';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
 const listado = () => {
     const[productos, setProductos] = useState([])
 
@@ -55,11 +57,11 @@ const handleEditar = (id) => {
 };
 
 return (
-  <TableContainer component={Paper}>
+  <TableContainer component={Paper} sx={{marginBottom:{xs:"3rem",md:"0px"}}}>
     <Table>
       <TableHead>
         <TableRow>
-          <TableCell>ID</TableCell>
+          <TableCell sx={{width:{xs:"1rem"}}}>ID</TableCell>
           <TableCell>Nombre</TableCell>
           <TableCell>Precio Lista</TableCell>
           <TableCell>Precio</TableCell>
@@ -70,17 +72,17 @@ return (
       <TableBody>
         {productos.map((producto) => (
           <TableRow key={producto.id}  id={`fila-${producto.id}`}>
-            <TableCell>{producto.id}</TableCell>
+            <TableCell sx={{width:{xs:"1rem"}}}>{producto.id}</TableCell>
             <TableCell>{producto.name}</TableCell>
             <TableCell>${producto.priceLista}</TableCell>
             <TableCell>${producto.price}</TableCell>
             <TableCell>{producto.stock}</TableCell>
             <TableCell>
               <Button variant="contained" color="primary" onClick={() => handleEditar(producto.id)} style={{ marginRight: 5 }}>
-                Editar
+                <ModeEditIcon/>
               </Button>
               <Button variant="contained" color="secondary" onClick={() => handleEliminar(producto.id)}>
-                Eliminar
+                <DeleteIcon/>
               </Button>
             </TableCell>
           </TableRow>

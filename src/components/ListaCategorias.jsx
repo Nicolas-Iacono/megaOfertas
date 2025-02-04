@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import API from '@/utils/api';
 import { Box, Radio, FormControlLabel, RadioGroup, FormControl, FormLabel } from '@mui/material';
 
 const ListaCategorias = ({ onCategorySelected }) => {
@@ -20,9 +20,9 @@ const ListaCategorias = ({ onCategorySelected }) => {
     }, {}));
  
     useEffect(() => {
-        const fetchProductos = async () => { // Renombrado para mayor claridad
+        const fetchProductos = async () => { 
             try {
-                const response = await axios.get('http://localhost:5000/products/all');
+                const response = await API.get('/products/all');
                 setProductos(response.data);
             } catch (err) {
                 console.error('Error al obtener los productos:', err);
@@ -38,12 +38,12 @@ const ListaCategorias = ({ onCategorySelected }) => {
     const handleFilterChange = (event) => {
         const categoryId = event.target.value;
         setSelectedCategory(categoryId);
-        onCategorySelected(categoryId); // Llama a la función callback con la categoría seleccionada
+        onCategorySelected(categoryId); 
     };
 
     const handleAllCategories = () => {
-        setSelectedCategory(null); // Deselecciona cualquier categoría
-        onCategorySelected(null); // Llama al callback con null para indicar "todas las categorías"
+        setSelectedCategory(null); 
+        onCategorySelected(null); 
     }
 
     if (loading) {

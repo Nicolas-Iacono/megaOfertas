@@ -12,6 +12,8 @@ import splideGlobal from "../styles/splideGlobal.css";
 import TarjetaCategoria from '@/components/TarjetaCategoria';
 import categorias from "../data/categorias"
 import { Footer } from '@/components/Footer';
+import Slider from "../components/slider/Slider"
+
  // Importa tu contexto
 export default function Home() {
   const [productos, setProductos] = useState([]);
@@ -19,12 +21,25 @@ export default function Home() {
   const { category, fetchCategory, updateCategory } = useCategory();
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+const [mobile, setMobile] = useState(false)
+
+ useEffect(() => {
+  const handleResize = () => {
+    setMobile(window.innerWidth < 768); // Considerando 768px como el breakpoint para móvil
+  };
+
+  handleResize(); // Ejecutar la función al inicio para establecer el estado correctamente
+
+  window.addEventListener("resize", handleResize);
+
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
 
   const [productsPerPage, setProductsPerPage] = useState(5);
    useEffect(() => {
     const updateProductsPerPage = () => {
-      if (window.innerWidth < 1900) { // Cambia "768" por la cantidad de píxeles deseada
-        setProductsPerPage(4);
+      if (window.innerWidth < 978) { // Cambia "768" por la cantidad de píxeles deseada
+        setProductsPerPage(6);
       } else {
         setProductsPerPage(5);
       }
@@ -51,6 +66,9 @@ export default function Home() {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+
+
+
 
 
   useEffect(() => {
@@ -93,26 +111,11 @@ export default function Home() {
 
   return (
     <Grid2 sx={{color:"white", }}>
-      <Box sx={{width:"90%", height:"26rem",display:"flex", justifyContent:"center", alignItems:"center", boxShadow:"2px 2px 10px black", margin:"20px auto",borderRadius:"10px"}}>
-          <VerticalSlider/>
+      <Box sx={{width:{xs:"100%",md:"95%"}, height:"28rem",display:"flex", justifyContent:"flex-start", alignItems:"center", boxShadow:"2px 2px 10px black", margin:{xs:"0px",md:"20px auto"},borderRadius:"25px"}}>
+          <Slider/>
       </Box>
 
-      <Box
-        sx={{
-          width: '80%',
-          height: '19rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          margin: '20px auto',
-        }}
-      >
-        {categorias.map((category) => (
-          <TarjetaCategoria key={category.id} categoria={category} />
-        ))}
-      </Box>
-      
-
+    
 
 
     
@@ -121,7 +124,7 @@ export default function Home() {
       
 
 
-        <Grid2 sx={{width:"90%", height:"25rem", display:"flex", justifyContent:"space-around", margin:"0 auto", alignItems:"end", padding:".5rem", borderRadius:"10px",flexWrap:"wrap"}}>
+        <Grid2 sx={{width:{md:"90%", xs:"100%"}, height:{xs:"auto", md:"25rem"}, display:"flex", justifyContent:"space-around", margin:"0 auto", alignItems:"end", padding: {xs:"0",md:".5rem"}, borderRadius:"10px",flexWrap:"wrap", gap:"1rem"}}>
 
      {
       currentProducts.map((producto) =>(
@@ -132,7 +135,7 @@ export default function Home() {
 
      
         </Grid2>
-        <Grid2 style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+        <Grid2 style={{ display: "flex", justifyContent: "center", marginTop: "1rem", marginBottom:"4rem" }}>
   {[...Array(totalPages)].map((_, index) => (
     <IconButton
       key={index}
@@ -156,10 +159,10 @@ export default function Home() {
       </Grid2>
 
       
-    <Grid2 sx={{display:"flex", height:"14rem", width:"80%", margin:"0 auto", justifyContent:"space-between", gap:"1rem"}}>
+    <Grid2 sx={{ height:"14rem", width:"80%", margin:"0 auto", justifyContent:"space-between", gap:"1rem", display:{xs:"none",md:"flex"}}}>
         <Paper elevation={3} sx={{backgroundColor:"#3DD34A",display:"flex", height:"100%", width:"100%",borderRadius:"20px", justifyContent:"space-around"}}>
 
-          <Box sx={{width:"50%", padding:4}}>
+          <Box sx={{width:"50%", padding:4, }}>
             <Typography variant='h2' color='white'>
               Canal de difusion
             </Typography>
@@ -171,8 +174,8 @@ export default function Home() {
         </Paper>
    
     </Grid2>
-
-    <Footer/>
+    
+    {mobile ? (<></>) :(<Footer/>) }
     </Grid2>
   );
 }

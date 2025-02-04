@@ -5,8 +5,8 @@ import { TextField, Grid2, Button } from "@mui/material";
 import Swal from "sweetalert2";
 import { useMyUserContext } from "@/context/userContext";
 import usuarioApi from "../../data/usuarioApi"; // Ajusta la importación según sea necesario.
-import axios from "axios";
 import { useRouter } from "next/router";
+import API from '@/utils/api';
 
 const loginSchema = Yup.object({
   email: Yup.string().email("Correo inválido").required("El correo es obligatorio"),
@@ -32,7 +32,7 @@ const LoginAdminForm = () => {
     onSubmit: async (values, { setErrors })  => {
       try {
         // Llamada al endpoint
-        const response = await axios.post("http://localhost:5000/users/login", values);
+        const response = await API.post("/users/login", values);
     
         if (response.data.token) {
           // Guardar token y datos del usuario en localStorage

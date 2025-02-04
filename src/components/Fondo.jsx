@@ -10,9 +10,9 @@ const Fondo = styled(Grid2) (({theme}) =>  ({
    width:"100%",
    flex: "1",
    zIndex:"-1",
-   top: "50px",
+   top: {xs:"0px", md:"50px"},
    [theme.breakpoints.down("sm")]: {
-    height: "160vh", // Para pantallas pequeñas (móviles)
+    height: "165h", // Para pantallas pequeñas (móviles)
   },
 
 }));

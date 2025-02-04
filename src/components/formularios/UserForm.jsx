@@ -9,6 +9,7 @@ import {
   Grid2,
 } from "@mui/material";
 import Swal from "sweetalert2";
+import API from '@/utils/api';
 
 // Esquema de validación con Yup
 const UserSchema = Yup.object().shape({
@@ -55,14 +56,8 @@ const UserForm = () => {
     validationSchema: UserSchema,
     onSubmit: async (values) => {
       try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        });
-        if (response.ok) {
+        const response = await API.post("/users/register", values);
+        if (response.status === 201 || response.status === 200) { // Revisa si la API devuelve un código de éxito
           Swal.fire({
             title: "Registro exitoso",
             text: "Te has registrado correctamente",
@@ -70,13 +65,15 @@ const UserForm = () => {
           });
         }
       } catch (error) {
+        console.error(error);
         Swal.fire({
           title: "Error",
-          text: "Hubo un problema al registrar tus datos",
+          text: error.response?.data?.message || "Hubo un problema al registrar tus datos",
           icon: "error",
         });
       }
     },
+    
   });
 
   const handleNext = () => {
@@ -265,12 +262,12 @@ const UserForm = () => {
             Atrás
           </Button>
           <Button
-            variant="contained"
-            color="primary"
-            onClick={handleNext}
-          >
-            {currentStep === steps.length - 1 ? "Registrarse" : "Siguiente"}
-          </Button>
+  variant="contained"
+  color="primary"
+  onClick={currentStep === steps.length - 1 ? formik.submitForm : handleNext}
+>
+  {currentStep === steps.length - 1 ? "Registrarse" : "Siguiente"}
+</Button>
         </Box>
       </form>
     </Box>

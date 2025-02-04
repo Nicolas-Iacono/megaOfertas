@@ -1,15 +1,12 @@
-import axios from 'axios';
 
-
-const URL_USER = "http://localhost:3000";
-
+import API from '@/utils/api';
 
 
 const usuarioApi =  {
 
   registrarUsuario:async(usuario) => {
   try{
-    const response = await axios.post(`${URL_USER}/registrar-admin`, usuario);
+    const response = await API.post(`/registrar-admin`, usuario);
     return response.data;
   }catch (error){
     console.error('Error al registrar usuario:', error);
@@ -19,7 +16,7 @@ const usuarioApi =  {
 
     login: async (usuario) => {
       try {
-        const response = await axios.post(`${URL_USER}/login`, usuario);
+        const response = await API.post(`/login`, usuario);
         return response.data;
       } catch (error) {
         throw new Error(error.response?.data?.message || "Error al iniciar sesión");

@@ -1,12 +1,24 @@
 
 
-
+import { useEffect, useState } from "react";
 import {Box, Card, CardMedia, CardContent, Typography, CardActions, Button } from "@mui/material";
 import { useRouter } from "next/router";
+import LikeButton from "../components/buttons/ProductLikeButton"
 
-const ProductCardCategory = ({ id, name, price, image, brand, priceList }) => {
+const ProductCardCategory = ({ id, name, price, image, brand }) => {
   const router = useRouter();
+ const [user, setUser] = useState(null);
 
+ 
+   useEffect(() => {
+   const storedUser = localStorage.getItem("user");
+   if (storedUser) {
+     setUser(JSON.parse(storedUser));
+   }
+ }, []);
+ 
+   const userId = user ? user.id : null;
+ 
   const handleViewDetails = () => {
     router.push(`/product/${id}`);
   };
@@ -18,43 +30,51 @@ const ProductCardCategory = ({ id, name, price, image, brand, priceList }) => {
   };
 
   return (
-    <Card elevation={8} sx={{ width: "45rem", height: "17rem", display: "flex", flexDirection: "row", backgroundColor: "white", borderRadius: "5px", padding: "1.5rem", justifyContent:"start",alignItems:"center" }}>
-      <CardMedia
-        sx={{ width: "50%", height: "12rem", backgroundPosition: "center center", backgroundRepeat: "no-repeat",objectFit:"contain", backgroundSize:"contain",borderRadius: "5px", }}
-        image={image}
-        alt={name || "Imagen del producto"}
-      />
-      <CardContent sx={{ width: "90%", height: "100%", display: "flex", flexDirection: "column", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "start", padding: ".5rem",  }}>
-        <Box sx={{}}>
-        {brand && <Typography variant="h6" sx={{ color: "gray" }}>{brand}</Typography>}
-
-        </Box>
-        <Box sx={{marginBottom:"1.5rem"}}>
-        <Typography variant="h4" fontWeight={"light"}sx={{ color: "black", fontWeight:"100" }}>{name}</Typography>
-
-        </Box>
-        <Box >
-          
-          <Typography variant="body2" sx={{ color: "black",  textDecoration: "line-through"}}>${priceList}</Typography>
+<Card elevation={8} key={id} sx={{width:{md:"15rem", xs:"10rem"}, height:{md:"22rem", xs:"15rem"}, display:"flex", flexDirection:"column", backgroundColor:"white", borderRadius:"25px",padding:{xs:".5rem",md:"1rem"}, cursor:"pointer", transition: "box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out",
+    "&:hover": {
+      boxShadow: 15,
+      transform: "translateY(-5px)", 
+    },}}>
     
-          <Box sx={{display:"flex", flexDirection:"row", justifyContent:"space-between", alignItems:"center", width:"7rem", gap:"1rem"}}>
-        
-        <Typography variant="h5" sx={{ color: "black" }}>${price}</Typography>
-        <Typography variant="h6" sx={{ color: "orange" }}>{porcentajeReduction(price, priceList)}%</Typography>
-        </Box>
+    <CardMedia  sx={{width:"100%", height:"9rem", backgroundPosition:"center center", backgroundRepeat:"no-repeat", backgroundSize:"cover", borderRadius:"20px", }}
+          image={image}
+          alt={name || "Imagen del producto"}
+      >
+    </CardMedia>
+    <CardContent sx={{ width:"90%", height:"50%",display:"flex", flexDirection:"column", flexWrap:"nowrap",justifyContent:"space-between",alignItems:"start",
+    padding:".2rem"
+    }}>
+      <Box sx={{display:"flex",flexDirection:"column",}}>
 
-        </Box>
+      <Typography variant='body2' sx={{color:"black", color:"gray", }}>
+        {brand} 
+      </Typography>
+      <Typography variant='body2' sx={{color:"black",}}>
+        {name} 
+      </Typography>
+      </Box>
 
-        <CardActions>
-          <Button variant="contained" onClick={handleViewDetails} sx={{height:"2rem", width:"9rem", marginLeft:"-8px"}}>
-            <Typography variant="body2" sx={{ textTransform: "none"}}>
-               Ver detalle            
-            </Typography>
-          </Button>
-      </CardActions>
-      </CardContent>
-  
-    </Card>
+      <Typography variant='h6' sx={{color:"black"}}>
+          $ {price}
+      </Typography>
+
+    </CardContent>
+    <CardActions sx={{backgroundColor:"rgb(250, 241, 233)", borderRadius:"20px", display:"flex", justifyContent:"space-between"}}>
+        <Button variant='contained'
+      onClick={() => handleViewDetails(id)}
+      sx={{borderRadius:"20px", height:{xs:"2rem"}}}>
+          <Typography  variant="body2"  sx={{
+              color: "white",
+              textAlign: "center",
+              textTransform: "lowercase",
+            }}>
+              Ver producto
+          </Typography>
+        </Button>
+        <LikeButton productId={id} userId={userId} sx={{width:{xs:"1rem"},height:"1rem"}}/>
+    </CardActions>
+    
+</Card>
   );
 };
 

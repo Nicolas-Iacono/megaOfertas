@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Box, Select, InputLabel, MenuItem, FormControl } from "@mui/material";
-
+import API from "@/utils/api";
 const SelectAPI = ({ onSelect }) => {
   const [options, setOptions] = useState([]); // Estado para guardar las opciones.
   const [selectedOption, setSelectedOption] = useState(""); // Estado para la opción seleccionada.
@@ -9,7 +8,7 @@ const SelectAPI = ({ onSelect }) => {
   // Función para obtener los datos de la API.
   const fetchOptions = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/category/all"); // Cambia la URL por tu API.
+      const response = await API.get("/category/all"); // Cambia la URL por tu API.
       setOptions(response.data); // Asume que la respuesta contiene un array de objetos.
     } catch (error) {
       console.error("Error al obtener los datos:", error);
