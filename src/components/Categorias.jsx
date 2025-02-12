@@ -1,6 +1,8 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import Grid2 from "@mui/material";
+import Image from 'next/image';
+
 
 const Categorias = () => {
   const catData = [
@@ -49,7 +51,7 @@ const Categorias = () => {
             alt={item.name} // Accesibilidad
           >
 
-            <img src={item.image} alt="" width="50px"/>
+            <Image src={item.image} alt="" width="50px"/>
           </Box>
           <Typography
             variant="body2"

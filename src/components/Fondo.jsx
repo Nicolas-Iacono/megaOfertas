@@ -3,7 +3,7 @@ import { styled } from '@mui/material/styles';
 
 const Fondo = styled(Grid2) (({theme}) =>  ({
   backgroundColor: "rgb(237, 237, 237)",
-  // Asegura que ocupa el alto de la pantalla
+  // Asegura que ocupa el alto de la pantalla 
    marginLeft:"0px",
    position:"absolute",
    left: 0,
@@ -12,7 +12,7 @@ const Fondo = styled(Grid2) (({theme}) =>  ({
    zIndex:"-1",
    top: {xs:"0px", md:"50px"},
    [theme.breakpoints.down("sm")]: {
-    height: "165h", // Para pantallas pequeñas (móviles)
+    minHeight: "110vh", // Para pantallas pequeñas (móviles)
   },
 
 }));

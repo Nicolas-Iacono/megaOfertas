@@ -57,14 +57,14 @@ const Perfil = () => {
         flexDirection: "column",
         alignItems: { md: "start", xs: "center" },
         height: "100vh",
-        width: "100vw",
+        width: "90vw",
         padding: { md: "2rem", xs: "1rem" },
         overflowY: "auto",
       }}
     >
       {/* Botón de edición */}
-      <IconButton
-        sx={{ position: "absolute", top: 10, right: 10 }}
+  <IconButton
+        sx={{ position: "absolute", top: 70, right: 10 , widht:"8rem", height:"4rem"}}
         onClick={() => setIsEditing(!isEditing)}
       >
         <Edit />
@@ -77,11 +77,12 @@ const Perfil = () => {
           display: "flex",
           flexDirection: "column",
           gap: 2,
+          marginTop:"5rem",
         }}
       >
         {/* Avatar y Nombre */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexDirection:{xs:"column", md:"row"} }}>
-          <Avatar sx={{ width: 80, height: 80, bgcolor: "primary.main" }}>
+          <Avatar sx={{ width: 80, height: 80, bgcolor: "primary.main", position:"relative"}}>
             {userStorage.first_name.charAt(0)}
             {userStorage.last_name.charAt(0)}
           </Avatar>

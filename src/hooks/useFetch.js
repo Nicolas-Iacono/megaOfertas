@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 
 
-export const getAxios = (url) =>{
+export const useAxios = (url) =>{
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [isLoading,setLoading] = useState(null)

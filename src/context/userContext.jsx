@@ -1,66 +1,127 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import Swal from 'sweetalert2';
 
 const UserContext = createContext();
 
+const emptyUser = {
+  email: null,
+  token: null,
+  first_name: null,
+  last_name: null,
+  authorities: []
+};
+
 export const UserContextProvider = ({ children }) => {
-  const [user, setUser] = useState({
-    email: null,
-    token: null,
-    first_name: null,
-    last_name: null,
-    authorities:[]
-  });
-console.log(user);
-  const [isUser, setIsUser] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLogged, setIsLogged] = useState(false);
+  const [user, setUser] = useState(emptyUser);
 
+  // Cargar usuario desde localStorage cuando el componente se monta (solo cliente)
   useEffect(() => {
-    try {
-      const userStorage = localStorage.getItem("user");
-      if (userStorage) {
-        const user = JSON.parse(userStorage);
-        setUser(user);
-        setIsLogged(true);
-  
-        // Verificar si el usuario tiene el rol ADMIN
-        if (!user.authorities.includes("ROLE_ADMIN")) {
-          setIsAdmin(false);
-          setIsUser(true); // Si es admin, no debe ser tratado como usuario común
-        } else {
-          setIsAdmin(true);
-          setIsUser(false); // Si no es admin, es un usuario común
-        }
-  
-
+    const storedUser = window?.localStorage?.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        updateUserStates(parsedUser);
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+        window?.localStorage?.removeItem("user");
       }
-    } catch (error) {
-      console.error("Error al obtener el usuario del localStorage:", error);
     }
   }, []);
 
-        useEffect(() => {
-          console.log("Estado actualizado -> Es admin:", isAdmin);
-          console.log("Estado actualizado -> Es usuario común:", isUser);
-        }, [isAdmin, isUser]);
+  const isUser = () => {
+    return user?.authorities?.includes("ROLE_USER");
+  };
 
+  const isAdmin = () => {
+    return user?.authorities?.includes("ROLE_ADMIN");
+  };
 
-  const login =  (token, email) =>{
-    const decoded = jwtDecode(token);
-    
-  }
+  const updateUserStates = (userData) => {
+    if (!userData) {
+      setUser(emptyUser);
+      return;
+    }
+    setUser(userData);
+  };
 
+  const setUserWithToken = (token) => {
+    try {
+      // Si no hay token, limpiar el estado
+      if (!token) {
+        updateUserStates(null);
+        return;
+      }
 
-  
+      // Validar que el token sea una cadena
+      if (typeof token !== 'string') {
+        throw new Error('Token inválido: debe ser una cadena');
+      }
+
+      const decoded = jwtDecode(token);
+      
+      // Validar que el token decodificado tenga los campos necesarios
+      if (!decoded.email || !decoded.id) {
+        throw new Error('Token inválido: falta información requerida');
+      }
+
+      const userData = {
+        email: decoded.email,
+        token: token,
+        id: decoded.id,
+        first_name: decoded.first_name || '',
+        last_name: decoded.last_name || '',
+        authorities: Array.isArray(decoded.authorities) ? decoded.authorities : []
+      };
+      
+      window?.localStorage?.setItem("user", JSON.stringify(userData));
+      updateUserStates(userData);
+
+      // Disparar eventos de storage para sincronizar otras pestañas
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'user',
+          newValue: JSON.stringify(userData)
+        }));
+      }
+    } catch (error) {
+      console.error('Error al procesar el token:', error);
+      // Limpiar el estado y localStorage en caso de error
+      window?.localStorage?.removeItem("user");
+      updateUserStates(null);
+      throw error;
+    }
+  };
+
   const logout = () => {
-    localStorage.clear();
-    setUser({ email: "", token: "" });
+    // Limpiar localStorage
+    if (typeof window !== 'undefined') {
+      window?.localStorage?.removeItem("user");
+      window?.localStorage?.removeItem("carrito");
+      
+      // Disparar eventos de storage para sincronizar otras pestañas
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'user',
+        newValue: null
+      }));
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'carrito',
+        newValue: null
+      }));
+    }
+
+    // Actualizar estados
+    updateUserStates(null);
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, logout, isUser,isAdmin }}>
+    <UserContext.Provider value={{ 
+      user, 
+      setUser: updateUserStates,
+      setUserWithToken,
+      logout, 
+      isUser, 
+      isAdmin 
+    }}>
       {children}
     </UserContext.Provider>
   );

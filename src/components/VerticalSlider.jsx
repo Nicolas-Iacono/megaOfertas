@@ -4,6 +4,8 @@ import '@splidejs/splide/dist/css/splide.min.css';
 import { Box, Button, Paper, Typography} from '@mui/material';
 import { useRouter } from "next/router";
 import API from '@/utils/api';
+import Image from 'next/image';
+
 export const VerticalSlider = () => {
   const [products, setProducts] = useState([]);
   const router = useRouter();
@@ -144,7 +146,7 @@ export const VerticalSlider = () => {
 
                   }}
                 >
-                  <img
+                  <Image
                     src={
                       product.imagenes && product.imagenes.length > 0
                         ? product.imagenes[0]

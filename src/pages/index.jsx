@@ -1,181 +1,280 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import API from '../utils/api';
-import {Grid2, Typography,Box,Button,Select,MenuItem,Checkbox, Paper, IconButton} from '@mui/material'
-import ListaCategorias from "../components/ListaCategorias"
-import Categorias from "../components/Categorias"
+import { Grid2, Typography, Box, IconButton, Paper } from '@mui/material';
+import { useCategory } from "../context/categoryContext";
 import ProductCard from '@/components/ProductCard';
-import { CategoryContextProvider, useCategory } from "../context/categoryContext";
-import UltimoProducto from '@/components/UltimoProducto';
-import Fondo from '@/components/Fondo';
-import VerticalSlider from '@/components/VerticalSlider';
-import splideGlobal from "../styles/splideGlobal.css";
-import TarjetaCategoria from '@/components/TarjetaCategoria';
-import categorias from "../data/categorias"
+import Slider from "../components/slider/Slider";
 import { Footer } from '@/components/Footer';
-import Slider from "../components/slider/Slider"
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
- // Importa tu contexto
+const PRODUCTS_PER_PAGE = {
+  mobile: 6,
+  desktop: 5
+};
+
 export default function Home() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [productos, setProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
-  const { category, fetchCategory, updateCategory } = useCategory();
+  const { category, updateCategory } = useCategory();
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-const [mobile, setMobile] = useState(false)
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
- useEffect(() => {
-  const handleResize = () => {
-    setMobile(window.innerWidth < 768); // Considerando 768px como el breakpoint para móvil
-  };
-
-  handleResize(); // Ejecutar la función al inicio para establecer el estado correctamente
-
-  window.addEventListener("resize", handleResize);
-
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
-
-  const [productsPerPage, setProductsPerPage] = useState(5);
-   useEffect(() => {
-    const updateProductsPerPage = () => {
-      if (window.innerWidth < 978) { // Cambia "768" por la cantidad de píxeles deseada
-        setProductsPerPage(6);
-      } else {
-        setProductsPerPage(5);
-      }
-    };
-
-    // Configura el valor inicial
-    updateProductsPerPage();
-
-    // Escucha los cambios de tamaño de la ventana
-    window.addEventListener("resize", updateProductsPerPage);
-
-    // Limpia el evento cuando el componente se desmonta
-    return () => {
-      window.removeEventListener("resize", updateProductsPerPage);
-    };
-  }, []);
-  
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = productos.slice(indexOfFirstProduct, indexOfLastProduct);
-
-  const totalPages = Math.ceil(productos.length / productsPerPage);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-
-
-
+  const productsPerPage = isMobile ? PRODUCTS_PER_PAGE.mobile : PRODUCTS_PER_PAGE.desktop;
 
   useEffect(() => {
-    API.get('/products/all')
-      .then((res) => setProductos(res.data))
-      .catch((err) => console.error(err));
-  }, []);
+    const handleResize = () => {
+      setIsLoading(true);
+    };
 
-  // Fetch and set filtered products based on selected category
-  useEffect(() => {
-    if (categoriaSeleccionada) { // Only fetch if a category is selected
-      API.get(`/category/${categoriaSeleccionada}`)
-        .then((res) => setProductosFiltrados(res.data))
-        .catch((err) => console.error(err));
-    } else { // If no category is selected, set filtered products to all products
-      setProductosFiltrados(productos);
+    if (isInitialLoad) {
+      handleResize();
+      setIsInitialLoad(false);
     }
-  }, [categoriaSeleccionada, productos]); // Update on category change and product change
 
-  const handleCategoryChange = (id) => {
-    updateCategory({ id: id });
-  };
+    window.addEventListener("resize", handleResize);
 
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isInitialLoad]);
 
+  const { currentProducts, totalPages } = useMemo(() => {
+    const indexOfLastProduct = currentPage * productsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+    return {
+      currentProducts: productos.slice(indexOfFirstProduct, indexOfLastProduct),
+      totalPages: Math.ceil(productos.length / productsPerPage)
+    };
+  }, [productos, currentPage, productsPerPage]);
 
+  const fetchProductos = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await API.get('/products/all');
+      setProductos(response.data);
+      setProductosFiltrados(response.data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
+  const fetchProductosPorCategoria = useCallback(async (categoryId) => {
+    if (!categoryId) {
+      setProductosFiltrados(productos);
+      return;
+    }
 
-  if (category.loading) {
-    return <div>Cargando categoría...</div>;
+    try {
+      setIsLoading(true);
+      const response = await API.get(`/category/${categoryId}`);
+      setProductosFiltrados(response.data);
+    } catch (error) {
+      console.error('Error fetching category products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [productos]);
+
+  useEffect(() => {
+    fetchProductos();
+  }, [fetchProductos]);
+
+  useEffect(() => {
+    fetchProductosPorCategoria(categoriaSeleccionada);
+  }, [categoriaSeleccionada, fetchProductosPorCategoria]);
+
+  const handleCategoryChange = useCallback((id) => {
+    setCategoriaSeleccionada(id);
+    updateCategory({ id });
+  }, [updateCategory]);
+
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  if (isLoading && isInitialLoad) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <Typography variant="h5">Cargando...</Typography>
+      </Box>
+    );
   }
 
   if (category.error) {
-    return <div>Error: {category.error}</div>;
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        color: 'error.main' 
+      }}>
+        <Typography variant="h5">Error: {category.error}</Typography>
+      </Box>
+    );
   }
 
-  const handleCategorySelected = (categoryId) => {
-    setCategoriaSeleccionada(categoryId);
-    //Aquí puedes usar el Id de la categoría para realizar otras acciones.
-};
-
   return (
-    <Grid2 sx={{color:"white", }}>
-      <Box sx={{width:{xs:"100%",md:"95%"}, height:"28rem",display:"flex", justifyContent:"flex-start", alignItems:"center", boxShadow:"2px 2px 10px black", margin:{xs:"0px",md:"20px auto"},borderRadius:"25px"}}>
-          <Slider/>
+    <Grid2 sx={{ 
+      color: "white",
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column"
+    }}>
+      <Box sx={{
+        width: { xs: "100%", md: "95%" },
+        height: "28rem",
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        margin: { xs: "0", md: "20px auto" },
+        borderRadius: "25px",
+        overflow: "hidden",
+        transition: "transform 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-5px)"
+        }
+      }}>
+        <Slider />
       </Box>
 
-    
-
-
-    
-      
-      <Grid2 sx={{width:"100%", display:"flex",justifyContent:"space-between", alignItems:"center", padding:"1rem", borderRadius:"10px", flexDirection:"column", }}>
-      
-
-
-        <Grid2 sx={{width:{md:"90%", xs:"100%"}, height:{xs:"auto", md:"25rem"}, display:"flex", justifyContent:"space-around", margin:"0 auto", alignItems:"end", padding: {xs:"0",md:".5rem"}, borderRadius:"10px",flexWrap:"wrap", gap:"1rem"}}>
-
-     {
-      currentProducts.map((producto) =>(
-
-        <ProductCard key={producto.id} producto={producto}/>
-      ))
-     }
-
-     
-        </Grid2>
-        <Grid2 style={{ display: "flex", justifyContent: "center", marginTop: "1rem", marginBottom:"4rem" }}>
-  {[...Array(totalPages)].map((_, index) => (
-    <IconButton
-      key={index}
-      onClick={() => handlePageChange(index + 1)}
-      sx={{
-        margin: "0 0.5rem",
+      <Grid2 sx={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
         padding: "1rem",
-        backgroundColor: currentPage === index + 1 ? " #e8621d" : " #e8621d",
-        width:currentPage === index + 1 ? "3rem" : "2rem",
-        height:currentPage === index + 1 ? "3rem" : "2rem",
-        color: "white",
-        border: "none",
-        borderRadius: "50%",
+        gap: "2rem"
+      }}>
+        <Grid2 sx={{
+          width: { md: "90%", xs: "100%" },
+          display: "flex",
+          justifyContent: "space-around",
+          margin: "0 auto",
+          padding: { xs: "0", md: ".5rem" },
+          borderRadius: "10px",
+          flexWrap: "wrap",
+          gap: "1.5rem"
+        }}>
+          {currentProducts.map((producto) => (
+            <Box
+              key={producto.id}
+              sx={{
+                transform: "scale(1)",
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.02)"
+                }
+              }}
+            >
+              <ProductCard producto={producto} />
+            </Box>
+          ))}
+        </Grid2>
 
-      }}
-    >
-      {index + 1}
-    </IconButton>
-  ))}
-</Grid2>
+        <Grid2 sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "0.5rem",
+          marginTop: "auto",
+          paddingBottom: "2rem"
+        }}>
+          {[...Array(totalPages)].map((_, index) => (
+            <IconButton
+              key={index}
+              onClick={() => handlePageChange(index + 1)}
+              sx={{
+                backgroundColor: currentPage === index + 1 ? "#e8621d" : "#ff9800",
+                width: currentPage === index + 1 ? "3rem" : "2.5rem",
+                height: currentPage === index + 1 ? "3rem" : "2.5rem",
+                color: "white",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  backgroundColor: "#e65100",
+                  transform: "scale(1.1)"
+                }
+              }}
+            >
+              {index + 1}
+            </IconButton>
+          ))}
+        </Grid2>
       </Grid2>
 
-      
-    <Grid2 sx={{ height:"14rem", width:"80%", margin:"0 auto", justifyContent:"space-between", gap:"1rem", display:{xs:"none",md:"flex"}}}>
-        <Paper elevation={3} sx={{backgroundColor:"#3DD34A",display:"flex", height:"100%", width:"100%",borderRadius:"20px", justifyContent:"space-around"}}>
+      {!isMobile && (
+        <Grid2 sx={{
+          padding: "2rem 10%"
+        }}>
+          <Paper
+            elevation={3}
+            sx={{
+              backgroundColor: "#3DD34A",
+              display: "flex",
+              height: "14rem",
+              borderRadius: "20px",
+              overflow: "hidden",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              "&:hover": {
+                transform: "translateY(-5px)",
+                boxShadow: "0 8px 16px rgba(0,0,0,0.1)"
+              }
+            }}
+          >
+            <Box sx={{
+              width: "50%",
+              padding: 4,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center"
+            }}>
+              <Typography 
+                variant="h2" 
+                color="white"
+                sx={{
+                  fontWeight: "bold",
+                  marginBottom: 2,
+                  textShadow: "2px 2px 4px rgba(0,0,0,0.1)"
+                }}
+              >
+                Canal de difusión
+              </Typography>
+              <Typography 
+                variant="h5" 
+                color="black"
+                sx={{
+                  fontWeight: "medium"
+                }}
+              >
+                Seguinos y enterate de todas las ofertas
+              </Typography>
+            </Box>
+            <Box
+              component="img"
+              src="/categorias/contacto.png"
+              alt="Contacto"
+              sx={{
+                width: "50%",
+                height: "100%",
+                objectFit: "cover"
+              }}
+            />
+          </Paper>
+        </Grid2>
+      )}
 
-          <Box sx={{width:"50%", padding:4, }}>
-            <Typography variant='h2' color='white'>
-              Canal de difusion
-            </Typography>
-            <Typography variant='h5' color='black'>
-            Seguinos y enterate de todas las ofertas 
-            </Typography>
-          </Box>
-          <img src={"/categorias/contacto.png"} alt="" />
-        </Paper>
-   
-    </Grid2>
-    
-    {mobile ? (<></>) :(<Footer/>) }
+      {!isMobile && <Footer />}
     </Grid2>
   );
 }

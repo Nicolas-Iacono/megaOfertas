@@ -1,100 +1,156 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import API from '../utils/api';
-import { Card, CardMedia, CardContent, Typography, CardActions, Button, Box, Paper } from "@mui/material";
-import { useEffect, useState } from "react";
-import { CategoryContextProvider, useCategory } from "../context/categoryContext";
+import { Card, CardMedia, CardContent, Typography, CardActions, IconButton, Box } from "@mui/material";
+import { useCategory } from "@/context/categoryContext";
 import { useMyCarritoContext } from "@/context/carritoContext";
-import LikeButton from "../components/buttons/ProductLikeButton"
+import { useMyUserContext } from "@/context/userContext";
+import ProductLikeButton from "./buttons/ProductLikeButton";
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import Swal from 'sweetalert2';
 
-const ProductCard = ({producto}) => {
-
-  // const [productos, setProductos] = useState([]);
-  const { category, fetchCategory, updateCategory } = useCategory();
-  const {carrito, setCarrito, agregarAlCarrito,eliminarDelCarrito, vaciarCarrito,totalCarrito} = useMyCarritoContext();
- const [user, setUser] = useState(null);
-  
-  const productosCategory = category.products
-
-  console.log("prod de categoria: " , productosCategory)
-
-
+const ProductCard = ({ producto }) => {
+  const { category } = useCategory();
+  const { agregarAlCarrito } = useMyCarritoContext();
+  const { user } = useMyUserContext();
   const router = useRouter();
 
-  const handleViewDetails = (id) => {
-    router.push(`/product/${id}`);
+  const handleCardClick = () => {
+    router.push(`/product/${producto.id}`);
   };
 
-
-  useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    setUser(JSON.parse(storedUser));
-  }
-}, []);
-
-  const userId = user ? user.id : null;
-
- 
- return (
-<>
-
-
-
-    <Card elevation={8} key={producto.id} sx={{width:{md:"15rem", xs:"10rem"}, height:{md:"22rem", xs:"15rem"}, display:"flex", flexDirection:"column", backgroundColor:"white", borderRadius:"25px",padding:{xs:".5rem",md:"1rem" ,  
-     "@media (max-width: 400px)": { // 🛠 Ajuste extra para pantallas < 400px
-      width: "9rem",
-      height: "15rem",
-      padding: ".3rem",
-    },}}}>
+  const handleAddToCart = (e) => {
+    e.stopPropagation(); // Prevenir que el click se propague a la tarjeta
     
-        <CardMedia  sx={{width:"100%", height:"9rem", backgroundPosition:"center center", backgroundRepeat:"no-repeat", backgroundSize:"cover", borderRadius:"20px", }}
-              image={producto.imagenes && producto.imagenes.length > 0 
-                ? producto.imagenes[0] 
-                : "/placeholder.jpg"}
-              alt={producto.name || "Imagen del producto"}
-          >
-        </CardMedia>
-        <CardContent sx={{ width:"90%", height:"50%",display:"flex", flexDirection:"column", flexWrap:"nowrap",justifyContent:"space-between",alignItems:"start",
-        padding:".2rem"
-        }}>
-          <Box sx={{display:"flex",flexDirection:"column",}}>
+    if (!user?.email) {
+      Swal.fire({
+        title: 'Inicio de sesión requerido',
+        text: 'Debes iniciar sesión para agregar productos al carrito',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Ir a login',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push('/login');
+        }
+      });
+      return;
+    }
 
-          <Typography variant='body2' sx={{color:"black", color:"gray", }}>
-            {producto.brand} 
-          </Typography>
-          <Typography variant='body2' sx={{color:"black",}}>
-            {producto.name} 
-          </Typography>
-          </Box>
+    agregarAlCarrito(producto);
+  };
 
-          <Typography variant='h6' sx={{color:"black"}}>
-              $ {producto.price}
-          </Typography>
+  return (
+    <Card 
+      elevation={3}
+      onClick={handleCardClick}
+      sx={{
+        width: {
+          md: "15rem", 
+          xs: "10rem",
+          "@media (max-width: 400px)": { width: "9rem" }
+        }, 
+        height: {
+          md: "22rem", 
+          xs: "15rem",
+          "@media (max-width: 400px)": { height: "15rem" }
+        }, 
+        display: "flex", 
+        flexDirection: "column", 
+        backgroundColor: "white", 
+        borderRadius: "15px",
+        padding: {
+          xs: ".5rem",
+          md: "1rem",
+          "@media (max-width: 400px)": { padding: ".3rem" }
+        },
+        cursor: "pointer",
+        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 8px 16px rgba(0,0,0,0.1)"
+        }
+      }}
+    >
+      <CardMedia  
+        sx={{
+          width: "100%", 
+          height: "12rem", 
+          backgroundPosition: "center center", 
+          backgroundRepeat: "no-repeat", 
+          backgroundSize: "cover", 
+          borderRadius: "12px"
+        }}
+        image={producto.imagenes?.[0] || producto.images?.[0]}
+        title={producto.nombre || producto.name}
+      />
 
-        </CardContent>
-        <CardActions sx={{backgroundColor:"rgb(250, 241, 233)", borderRadius:"20px", display:"flex", justifyContent:"space-between"}}>
-            <Button variant='contained'
-          onClick={() => handleViewDetails(producto.id)}
-          sx={{borderRadius:"20px", height:{xs:"2rem"}}}>
-              <Typography  variant="body2"  sx={{
-                  color: "white",
-                  textAlign: "center",
-                  textTransform: "lowercase",
-                }}>
-                  Ver producto
-              </Typography>
-            </Button>
-            {producto?.id && user?.id &&<LikeButton productId={producto.id} userId={userId} sx={{width:{xs:"1rem"},height:"1rem"}}/>}
-        </CardActions>
-        
+      <CardContent sx={{ flexGrow: 1, p: { xs: 1, md: 2 } }}>
+        <Typography 
+          gutterBottom 
+          variant="h6" 
+          component="div"
+          sx={{
+            fontSize: { xs: "0.9rem", md: "1.1rem" },
+            fontWeight: "bold",
+            mb: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical"
+          }}
+        >
+          {producto.nombre || producto.name}
+        </Typography>
+
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+          sx={{
+            fontSize: { xs: "0.8rem", md: "0.9rem" },
+            mb: 1
+          }}
+        >
+          {producto.marca || producto.brand}
+        </Typography>
+
+        <Typography 
+          variant="h6" 
+          color="primary"
+          sx={{
+            fontSize: { xs: "1rem", md: "1.2rem" },
+            fontWeight: "bold"
+          }}
+        >
+          ${Number(producto.precioVenta || producto.price).toLocaleString()}
+        </Typography>
+      </CardContent>
+
+      <CardActions 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          p: 1,
+          mt: 'auto',
+          borderTop: '1px solid rgba(0,0,0,0.08)',
+        }}
+      >
+        <IconButton 
+          onClick={handleAddToCart}
+          sx={{ 
+            bgcolor: "rgba(0,0,0,0.03)",
+            "&:hover": {
+              bgcolor: "rgba(0,0,0,0.08)",
+            },
+          }}
+        >
+          <AddShoppingCartIcon sx={{ color: "#D58420" }} />
+        </IconButton>
+        <ProductLikeButton productId={producto.id} />
+      </CardActions>
     </Card>
-
-
-
-</>
-
-
   );
 };
 

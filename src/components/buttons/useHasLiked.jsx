@@ -8,18 +8,23 @@ const useHasLiked = (userId, productId) => {
 
   useEffect(() => {
     const checkLike = async () => {
+      // Si no hay userId o productId, no hacer la petición
       if (!userId || !productId) {
-        console.error("Error: Faltan parámetros necesarios para verificar el like.");
         setLoading(false);
         return;
       }
   
       try {
         const response = await API.get(`like/products/${productId}/likes/${userId}`);
-        console.log("Respuesta del servidor:", response.data); // Log para verificar
         setHasLiked(response.data.hasLiked);
       } catch (error) {
-        setError(error.response?.data?.message || "Error al verificar el like.");
+        // Si el error es 404, significa que no hay like
+        if (error.response?.status === 404) {
+          setHasLiked(false);
+        } else {
+          console.error("Error al verificar el like:", error);
+          setError(error.response?.data?.message || "Error al verificar el like");
+        }
       } finally {
         setLoading(false);
       }
@@ -27,7 +32,6 @@ const useHasLiked = (userId, productId) => {
   
     checkLike();
   }, [userId, productId]);
-  
 
   return { hasLiked, setHasLiked, loading, error };
 };

@@ -13,3 +13,23 @@
   display: block;
   width: 100%;
 }
+
+.header-mobile {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f8f8f8;
+}
+
+.header-desktop {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #ffffff;
+}
+
+.nav-mobile ul, .nav-desktop ul {
+    list-style-type: none;
+    display: flex;
+    gap: 15px;
+}

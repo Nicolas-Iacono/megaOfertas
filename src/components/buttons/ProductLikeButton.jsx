@@ -1,65 +1,82 @@
 import { IconButton, CircularProgress } from "@mui/material";
 import API from "../../utils/api";
 import useHasLiked from "./useHasLiked";
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useMyUserContext } from "@/context/userContext";
+import Swal from 'sweetalert2';
 
-const ProductLikeButton = ({ productId, userId }) => {
-  const { hasLiked, setHasLiked, loading, error } = useHasLiked(userId, productId);
+const ProductLikeButton = ({ productId }) => {
+  const { user } = useMyUserContext();
+  const { hasLiked, setHasLiked, loading, error } = useHasLiked(user?.id, productId);
+  const router = useRouter();
 
-  const handleLikeToggle = async () => {
-    if (!userId || !productId) {
-      console.error("Error: Faltan parámetros necesarios para alternar el like.");
+  const handleLikeToggle = async (e) => {
+    e.stopPropagation(); // Detener la propagación del evento
+    
+    if (!user?.id) {
+      Swal.fire({
+        title: 'Inicio de sesión requerido',
+        text: 'Debes iniciar sesión para dar me gusta',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Ir a login',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push('/login');
+        }
+      });
       return;
     }
-  
+
     try {
       if (hasLiked) {
-        // Eliminar el like
-        await API.delete("http://localhost:5000/like/", {
-          data: { userId, productId },
+        await API.delete(`/like`, {
+          data: { userId: user.id, productId }
         });
-        setHasLiked(false); // Actualizar estado solo si la operación fue exitosa
       } else {
-        // Agregar el like
-        await API.post("http://localhost:5000/like/", { userId, productId });
-        setHasLiked(true); // Actualizar estado solo si la operación fue exitosa
+        await API.post(`/like`, {
+          userId: user.id,
+          productId
+        });
       }
+      setHasLiked(!hasLiked);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message;
-  
-      if (errorMessage === "Ya diste like a este producto.") {
-        console.warn("El servidor detectó que el producto ya tiene like.");
-        setHasLiked(true); // Sincroniza el estado con el backend
-      } else {
-        console.error(`Error al ${hasLiked ? "quitar" : "dar"} like:`, errorMessage);
-      }
+      console.error('Error al gestionar el like:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al procesar tu me gusta',
+        icon: 'error'
+      });
     }
   };
-  
 
   if (loading) {
-    return <CircularProgress color="inherit" />;
+    return (
+      <IconButton disabled>
+        <CircularProgress size={24} />
+      </IconButton>
+    );
   }
 
   return (
     <IconButton
-      sx={{
-        width: {xs:"2.5rem",md:"3rem"},
-        height:{xs:"2.5rem",md:"3rem"},
-        border: "3px solid orange",
-        borderRadius: "50%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        cursor: "pointer",
-        backgroundColor: hasLiked ? "orange" : "transparent",
-        color: "orange",
-      }}
       onClick={handleLikeToggle}
+      sx={{
+        backgroundColor: hasLiked ? 'red' : 'transparent',
+        border: hasLiked ? "none" : "2px solid orange",
+        '&:hover': {
+          backgroundColor: 'red'
+        }
+      }}
     >
-      <img
-        src={hasLiked ? "/iconos/corazon.svg" : "/iconos/corazonNaranja.png"}
-        width="20px"
-        alt="Like Icon"
+      <Image
+        src={hasLiked ? "/iconos/corazonBlanco.png" : "/iconos/corazonNaranja.png"}
+        alt={hasLiked ? "Me gusta" : "No me gusta"}
+        width={24}
+        height={24}
+        style={{ objectFit: 'contain' }}
       />
     </IconButton>
   );

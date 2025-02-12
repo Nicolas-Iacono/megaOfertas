@@ -1,6 +1,7 @@
 
 import { Grid2, Typography } from '@mui/material'
 import React from 'react'
+import Image from 'next/image';
 
 export const Footer = () => {
   return (
@@ -18,10 +19,11 @@ export const Footer = () => {
         alignItems: "center",
       }}
 >
-            <img
+            <Image
               src="/Logo/LogoMega1.png"
               alt="Logo"
-              style={{ width: "500px" }}
+              width={200}    // valor en píxeles (ejemplo)
+              height={100} 
             />
       <Typography variant="h6">Mega Ofertas 2025 | Todos los derechos reservados </Typography>
       </Grid2>

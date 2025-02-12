@@ -1,37 +1,96 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { debounce } from "lodash";
 import API from "@/utils/api";
 
 const useSearch = (query) => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const controllerRef = useRef(null);
+  const mounted = useRef(true);
 
-  useEffect(() => {
-    if (!query) {
-      setResults([]);
-      return;
+  // Función para limpiar el controlador actual
+  const cleanupController = useCallback(() => {
+    if (controllerRef.current) {
+      controllerRef.current.abort();
+      controllerRef.current = null;
     }
+  }, []);
 
-    const fetchData = debounce(async () => {
+  // Crear una función de búsqueda debounced que cancela la petición anterior
+  const debouncedSearch = useCallback(
+    debounce(async (searchQuery) => {
+      if (!searchQuery.trim() || !mounted.current) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+
+      // Limpiar el controlador anterior
+      cleanupController();
+
+      // Crear nuevo controlador
+      const controller = new AbortController();
+      controllerRef.current = controller;
+
       setLoading(true);
       try {
-        const { data } = await API.get(`/products/search?query=${query}`);
-        setResults(data);
+        const { data } = await API.get(`/products/search?query=${searchQuery}`, {
+          signal: controller.signal
+        });
+        
+        if (mounted.current) {
+          setResults(data);
+        }
       } catch (error) {
-        console.error("Error en la búsqueda:", error);
+        if (error.name === 'AbortError') {
+          console.log('Búsqueda cancelada');
+        } else {
+          console.error("Error en la búsqueda:", error);
+          if (mounted.current) {
+            setResults([]);
+          }
+        }
       } finally {
-        setLoading(false);
+        if (mounted.current) {
+          setLoading(false);
+        }
       }
-    }, 500); // Espera 500ms después del último input antes de ejecutar
+    }, 300),
+    []
+  );
 
-    fetchData();
-    
-    return () => fetchData.cancel(); // Cancelar petición anterior si el usuario sigue escribiendo
+  // Efecto para manejar la búsqueda
+  useEffect(() => {
+    debouncedSearch(query);
 
-  }, [query]);
+    return () => {
+      debouncedSearch.cancel();
+      cleanupController();
+    };
+  }, [query, debouncedSearch, cleanupController]);
 
-  return { results, loading };
+  // Efecto para limpiar recursos al desmontar
+  useEffect(() => {
+    return () => {
+      mounted.current = false;
+      cleanupController();
+      debouncedSearch.cancel();
+    };
+  }, [cleanupController, debouncedSearch]);
+
+  // Función para limpiar los resultados manualmente
+  const clearResults = useCallback(() => {
+    setResults([]);
+    setLoading(false);
+    cleanupController();
+    debouncedSearch.cancel();
+  }, [cleanupController, debouncedSearch]);
+
+  return { 
+    results, 
+    loading, 
+    clearResults 
+  };
 };
 
 export default useSearch;

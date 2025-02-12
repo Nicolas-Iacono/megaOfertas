@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import Swal from "sweetalert2";
 import API from '@/utils/api';
+import Image from 'next/image';
 
 // Esquema de validación con Yup
 const UserSchema = Yup.object().shape({
@@ -35,7 +36,7 @@ const UserSchema = Yup.object().shape({
 
 const API_URL = "http://localhost:5000/users/register";
 
-const UserForm = () => {
+const UserForm = ({ onRegisterSuccess }) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
@@ -57,26 +58,61 @@ const UserForm = () => {
     onSubmit: async (values) => {
       try {
         const response = await API.post("/users/register", values);
-        if (response.status === 201 || response.status === 200) { // Revisa si la API devuelve un código de éxito
-          Swal.fire({
-            title: "Registro exitoso",
+        if (response.status === 201 || response.status === 200) {
+          await Swal.fire({
+            title: "¡Registro exitoso!",
             text: "Te has registrado correctamente",
             icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+            timerProgressBar: true
           });
+          // Notificar al componente padre que el registro fue exitoso
+          onRegisterSuccess();
         }
       } catch (error) {
         console.error(error);
+        const errorMessage = error.response?.data?.details || 
+                           error.response?.data?.error || 
+                           error.response?.data?.message || 
+                           "Hubo un problema al registrar tus datos";
+        
         Swal.fire({
-          title: "Error",
-          text: error.response?.data?.message || "Hubo un problema al registrar tus datos",
+          title: "Error en el registro",
+          text: errorMessage,
           icon: "error",
+          confirmButtonText: "Entendido"
         });
       }
     },
-    
   });
 
   const handleNext = () => {
+    const fieldsToValidate = currentStep === 0
+      ? ['first_name', 'last_name', 'email', 'password']
+      : currentStep === 1
+        ? ['phone.area_code', 'phone.number']
+        : ['address.zip_code', 'address.street_name', 'address.street_number', 'address.city_name'];
+
+    const currentErrors = {};
+    fieldsToValidate.forEach(field => {
+      const value = field.includes('.') 
+        ? field.split('.').reduce((obj, key) => obj?.[key], formik.values)
+        : formik.values[field];
+      if (!value) {
+        currentErrors[field] = `El campo ${field.split('.').pop()} es requerido`;
+      }
+    });
+
+    if (Object.keys(currentErrors).length > 0) {
+      Swal.fire({
+        title: 'Campos incompletos',
+        html: Object.values(currentErrors).join('<br>'),
+        icon: 'warning'
+      });
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -92,10 +128,11 @@ const UserForm = () => {
 
     <Grid2>
           <Grid2 sx={{height:"11rem", margin:"0 auto", display:"flex", justifyContent:"center", alignItems:"center"}}>
-                <img
+                <Image
                     src="/Logo/LogoMega1.png"
                     alt="Logo"
-                    style={{ width: "350px",}}
+                    width={350}
+                    height={200}
 
                     />
           </Grid2>

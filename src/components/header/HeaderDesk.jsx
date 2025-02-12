@@ -8,73 +8,125 @@ import {
   InputBase,
   IconButton,
   useMediaQuery,
-  Button
+  Button,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  useTheme,
+  Badge,
+  Avatar,
+  Menu,
+  MenuItem,
+  Fade,
+  ListItemIcon
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import PersonIcon from "@mui/icons-material/Person";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import Logout from "@mui/icons-material/Logout";
+import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import { useMyUserContext } from "@/context/userContext";
 import MenuCategoria from "../MenuCategoria";
 import CarritoCompras from "../CarritoCompras";
 import { useRouter } from "next/router";
 import SearchBar from "../bucador/SearchBar";
+import { useMyCarritoContext } from "@/context/carritoContext"; 
+
+import Image from 'next/image';
 
 export const HeaderDesk = () => {
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
-  const [carritoView, setCarritoView] = useState(false)
-  const [username, setUsername] = useState("")
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [carritoView, setCarritoView] = useState(false);
+  const [username, setUsername] = useState("");
   const [user, setUser] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
   const router = useRouter();
-const {isAdmin,isUser} = useMyUserContext();
-  
+  const { isAdmin, isUser } = useMyUserContext();
+  const { carrito } = useMyCarritoContext();
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   const logOut = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    router.push("./login")
-  }
+    handleClose();
+    router.push("./login");
+  };
 
   useEffect(() => {
-    const userStorage = localStorage.getItem("user");
+    const updateUser = () => {
+      const userStorage = localStorage.getItem("user");
+      if (userStorage) {
+        const user = JSON.parse(userStorage);
+        setUser(user);
+        setUsername(`${user.first_name} ${user.last_name}`);
+      } else {
+        setUser(null);
+      }
+    };
 
-    if (userStorage) {
-      const user = JSON.parse(userStorage);
-      setUser(user);
-      setUsername(`${user.first_name} ${user.last_name}`);
-    }
-  }, []);
-  
+    updateUser();
+    window.addEventListener('storage', updateUser);
+
+    return () => {
+      window.removeEventListener('storage', updateUser);
+    };
+  }, [isAdmin, isUser]);
 
   const verCarrito = () => {
-    setCarritoView(!carritoView); // Alterna entre true y false
-    console.log("Estado previo:", carritoView); // Muestra el estado previo
+    setCarritoView(!carritoView);
   };
-  
-  // Efecto para ver el cambio en el estado
-  useEffect(() => {
-    console.log("Estado actualizado:", carritoView);
-  }, [carritoView]);
 
-
-  const linkStyles = {
-    color: "#fff",
-    textDecoration: "none",
-    marginLeft: "15px",
-    fontSize: "16px",
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
   };
+
+  const cartItemCount = carrito?.length || 0;
 
   return (
-    <>
+    <header className='header-desktop'>
       <CssBaseline />
-      <AppBar position="static" sx={{ backgroundColor: "#e8621d" }}>
+      <AppBar 
+        position="fixed" 
+        sx={{ 
+          backgroundColor: "#e8621d",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+        }}
+      >
         <Toolbar
           sx={{
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "0 1rem",
+            padding: "0.5rem 1rem",
+            minHeight: { xs: "56px", sm: "94px" }
           }}
         >
-          {/* Logo */}
+          {isMobile && (
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={toggleMenu}
+              sx={{ mr: 1 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+
           <Box
             sx={{
               display: "flex",
@@ -82,135 +134,178 @@ const {isAdmin,isUser} = useMyUserContext();
               width: isMobile ? "auto" : "10rem",
             }}
           >
-            <img
+            <Image
               src="/Logo/LogoMega1.png"
-              alt="Logo"
-              style={{ width: isMobile ? "50px" : "100px" }}
+              alt="Logo MegaOfertas"
+              width={73}
+              height={55}
+              onClick={() => router.push("/")}
             />
           </Box>
 
-          {/* Search and Navigation */}
-  
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                width: "50%",
-                gap: "0.5rem",
-              }}
-            >
-              <SearchBar/>
-              <Box sx={{ display: "flex", gap: "1rem" }}>
-                <MenuCategoria />
-                <a href="/" style={linkStyles}>
-                  Inicio
-                </a>
-                <a href="/contact" style={linkStyles}>
-                  Contacto
-                </a>
-              </Box>
+          {!isMobile && (
+            <Box sx={{ flex: 1, mx: 4 }}>
+              <SearchBar />
             </Box>
-  
+          )}
 
-          {/* User Section */}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: isMobile ? "row" : "column",
-              alignItems: "center",
-              gap: isMobile ? "1rem" : "0.5rem",
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {user ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: "0.2rem", alignItems: "center" }}>
-                          <Typography sx={{ fontSize: isMobile ? "12px" : "16px" }}>
-                          {username}
-                          </Typography>
-                          <Button sx={{backgroundColor:"white", height:"1.4rem", color:" #e8621d"}} onClick={logOut}>
-                            Log out
-                          </Button>
-              </Box>
-
-            ):(
               <>
-              <Typography sx={{ fontSize: isMobile ? "12px" : "16px" }}>
-              Invitado
-              </Typography>
-              <Button sx={{backgroundColor:"white", height:"1.4rem", color:" #e8621d"}}>
-                Log In
+                <IconButton
+                  color="inherit"
+                  onClick={() => router.push("/user/favorites")}
+                  aria-label="ver favoritos"
+                >
+                  <FavoriteIcon />
+                </IconButton>
+                <IconButton
+                  color="inherit"
+                  onClick={verCarrito}
+                  aria-label="carrito de compras"
+                >
+                  <Badge badgeContent={cartItemCount} color="error">
+                    <ShoppingCartIcon />
+                  </Badge>
+                </IconButton>
+
+                <IconButton
+                  onClick={handleMenu}
+                  color="inherit"
+                  aria-label="menu de usuario"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                >
+                  <Avatar 
+                    sx={{ 
+                      width: 32, 
+                      height: 32,
+                      backgroundColor: "#fff",
+                      color: "#e8621d"
+                    }}
+                  >
+                    <PersonIcon />
+                  </Avatar>
+                </IconButton>
+
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                  onClick={handleClose}
+                  PaperProps={{
+                    elevation: 0,
+                    sx: {
+                      overflow: 'visible',
+                      filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                      mt: 1.5,
+                      '& .MuiAvatar-root': {
+                        width: 32,
+                        height: 32,
+                        ml: -0.5,
+                        mr: 1,
+                      },
+                      '&::before': {
+                        content: '""',
+                        display: 'block',
+                        position: 'absolute',
+                        top: 0,
+                        right: 14,
+                        width: 10,
+                        height: 10,
+                        bgcolor: 'background.paper',
+                        transform: 'translateY(-50%) rotate(45deg)',
+                        zIndex: 0,
+                      },
+                    },
+                  }}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  {user ? (
+                    [
+                      <MenuItem key="profile" onClick={() => router.push('/perfil')}>
+                        <ListItemIcon>
+                          <PersonRoundedIcon fontSize="small" />
+                        </ListItemIcon>
+                        Mi Perfil
+                      </MenuItem>,
+                      <MenuItem key="logout" onClick={logOut}>
+                        <ListItemIcon>
+                          <Logout fontSize="small" />
+                        </ListItemIcon>
+                        Cerrar Sesión
+                      </MenuItem>
+                    ]
+                  ) : (
+                    <MenuItem onClick={() => router.push('/login')}>
+                      <ListItemIcon>
+                        <LoginRoundedIcon fontSize="small" />
+                      </ListItemIcon>
+                      Iniciar Sesión
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
+            ) : (
+              <Button
+                color="inherit"
+                onClick={() => router.push("/login")}
+                sx={{
+                  borderRadius: "20px",
+                  textTransform: "none",
+                  px: 2,
+                  border: "1px solid #fff"
+                }}
+              >
+                Iniciar Sesión
               </Button>
-  </>
             )}
-        
-       {
-        isAdmin ? (
-<Box
-              sx={{
-                display: "flex",
-                gap: "1rem",
-                alignItems: "center",
-              }}
-            >
-
-              
-              <IconButton>
-              <a href="/admin">
-              <img src="/iconos/admin/agregarProd.png" alt="Agregar un producto" style={{ width: "24px" }} />
-              </a>
-              </IconButton>
-              <a href="/listado">
-              <IconButton>
-                <img src="/iconos/admin/productos.png" alt="productos" style={{ width: "24px" }} />
-              </IconButton>
-              </a>
-              <IconButton >
-                <img src="/iconos/admin/pedidos.png" alt="pedidos" style={{ width: "24px" }} />
-              </IconButton>
-              <IconButton >
-                <img src="/iconos/admin/usuarios.png" alt="usuarios" style={{ width: "24px" }} />
-              </IconButton>
-            </Box>
-        ):(<Box
-          sx={{
-            display: "flex",
-            gap: "1rem",
-            alignItems: "center",
-          }}
-        >
-
-          <IconButton>
-          <a href="/login">
-          <img src="/iconos/usuario.svg" alt="User" style={{ width: "24px" }} />
-          </a>
-          </IconButton>
-          <IconButton>
-            <img src="/iconos/corazon.svg" alt="Likes" style={{ width: "24px" }} />
-          </IconButton>
-          <IconButton onClick={verCarrito}>
-            <img src="/iconos/cart.svg" alt="Carrito" style={{ width: "24px" }} />
-          </IconButton>
-        </Box>
-        )}
-            
-
-
-
-          
-              <Typography sx={{ fontSize: "12px" }}>Buenos Aires, Argentina</Typography>
-            
           </Box>
-
-       
-         
         </Toolbar>
 
+        {isMobile && (
+          <Box sx={{ px: 2, pb: 1 }}>
+            <SearchBar />
+          </Box>
+        )}
       </AppBar>
-      {
-        carritoView ? ( <CarritoCompras/>):(<></>)
-      }
-     
 
-    </>
+      <Drawer
+        anchor="left"
+        open={menuOpen}
+        onClose={toggleMenu}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: "250px",
+            backgroundColor: "#fff"
+          }
+        }}
+      >
+        <List>
+          <ListItem sx={{ justifyContent: "center", mb: 2 }}>
+            {/* <Image
+              src="/Logo/LogoMega1.png"
+              alt="Logo MegaOfertas"
+              width={55}
+              height={55}
+            /> */}
+          </ListItem>
+          <MenuCategoria onClose={toggleMenu} />
+        </List>
+      </Drawer>
+
+      {carritoView && (
+        <CarritoCompras 
+          open={carritoView} 
+          onClose={() => setCarritoView(false)} 
+        />
+      )}
+
+      {/* Espaciador para el AppBar fijo */}
+      <Toolbar sx={{ mb: isMobile ? 7 : 2 }} />
+    </header>
   );
 };
-export default HeaderDesk
+
+export default HeaderDesk;

@@ -8,6 +8,7 @@ import {
   Typography,
   TextareaAutosize,
   IconButton,
+  CardMedia
 } from "@mui/material";
 import RemoveIcon from "@mui/icons-material/Remove";
 import SelectAPI from "./selectCategoria"; 
@@ -78,6 +79,12 @@ const [view, setView] = useState(false);
   const handleRemoveImageField = (index) => {
     const newImages = formik.values.imagenes.filter((_, i) => i !== index);
     formik.setFieldValue("imagenes", newImages);
+  };
+
+  const handleImageUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const imageUrls = files.map(file => URL.createObjectURL(file));
+    formik.setFieldValue("imagenes", imageUrls);
   };
 
   return (
@@ -192,6 +199,24 @@ const [view, setView] = useState(false);
         </Box>
         <Box>
         <Typography variant="h6" sx={{color:"black"}}>Agregar imágenes de producto</Typography>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+          style={{ margin: '10px 0' }}
+        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {formik.values.imagenes.map((imagen, index) => (
+            <CardMedia
+              key={index}
+              component="img"
+              image={imagen}
+              alt={`Imagen ${index + 1}`}
+              sx={{ width: '100%', height: 'auto', borderRadius: 2 }}
+            />
+          ))}
+        </Box>
         {formik.values.imagenes.map((imagen, index) => (
           <Box key={index}>
             <TextField
@@ -226,3 +251,4 @@ const [view, setView] = useState(false);
 };
 
 export default ProductoForm;
+

@@ -17,6 +17,9 @@ import CarritoCompras from "./CarritoCompras";
 import { useRouter } from "next/router";
 import HeaderMobile from "../components/header/HeaderMobile"
 import HeaderDesk from "../components/header/HeaderDesk"
+import Link from 'next/link';
+
+
 export const Header = () => {
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
   const [carritoView, setCarritoView] = useState(false)
